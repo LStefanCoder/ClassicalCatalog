@@ -3,14 +3,57 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <script src="js/bootstrap.min.js"></script>
     <title>Main page</title>
   </head>
   <body>
     <h1>Index page</h1>
     <p>Search criteria</p>
 
+    <p>Please search the music database</p>
+
+    <!--https://bootstrapexamples.com/@anonymous/search-bar-->
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-6">
+          <div class="search-container">
+            <!--The input is placed inside a form so that the submitted value can be processed-->
+            <form action="">
+              <input id="search" name="search" type="text" value="<%= searchTerm %>" class="form-control search-input" placeholder="Search...">
+              <i class="fas fa-search search-icon"></i>
+              <select name="genre" id="genreSelect" onchange="this.form.submit()">
+                <option value="">All genres</option>
+                <option value="Category1" <% if (category == "Category1") { %> selected <% } %> >Category1</option>
+                <option value="Category1" <% if (category == "Category1") { %> selected <% } %> >Category1</option>
+              </select>
+            </form>
+          </div>
+        </div>
+      </div>
+
+    <!--https://getbootstrap.com/docs/5.3/components/dropdowns/-->
     <div class="dropdown">
-      
+      <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        Select genre
+      </button>
+      <ul class="dropdown-menu">
+        <li><a class="dropdown-item" href="#">Action</a></li>
+        <li><a class="dropdown-item" href="#">Another action</a></li>
+        <li><a class="dropdown-item" href="#">Something else here</a></li>
+      </ul>
     </div>
+
+    <div class="dropdown">
+      <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        Select key
+      </button>
+      <ul class="dropdown-menu">
+        <li><a class="dropdown-item" href="#">Action</a></li>
+        <li><a class="dropdown-item" href="#">Another action</a></li>
+        <li><a class="dropdown-item" href="#">Something else here</a></li>
+      </ul>
+    </div>
+
   </body>
 </html>
