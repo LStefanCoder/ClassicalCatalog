@@ -26,13 +26,14 @@ app.get('/', (req, res) => {
 });
 
 const port = 3000;
+
 app.listen(port, (err) => {
   if(err)
     {
       //printing the error message to the console
       console.log(err.message);
     }
-    console.log("Listening on " + port.toString());
+    console.log("Listening on port" + port.toString());
   
 });
 
@@ -74,11 +75,17 @@ app.listen(port, (err) => {
 
 //https://medium.com/@nicholasstepanov/search-your-server-side-mysql-database-from-node-js-website-400cd68049fa
 app.get('/results', search, (req, res) => {
+  const query = 'SELECT * FROM MusicPieces';
+  var queryResult = DB.query(query);
   var result = req.result;
   res.render('pages/results', {
-    results: result.length,
+    queryResult: req.result,
+    results: queryResult.length,
     term: req.term,
     result: result,
     category: req.category
   });
-})
+}); 
+
+//https://www.google.com/search?q=display+database+search+results+with+ejs&oq=display+database+search+results+with+ejs&gs_lcrp=EgZjaHJvbWUyBggAEEUYOdIBCDg5NTBqMGoxqAIIsAIB&sourceid=chrome&ie=UTF-8
+

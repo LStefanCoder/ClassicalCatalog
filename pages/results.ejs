@@ -9,13 +9,26 @@
   </head>
   <body>
     <h1>Search results</h1>
-    <script>
+    <p><%= results> results found!</p>
+    <!--based on https://www.digitalocean.com/community/tutorials/how-to-use-ejs-to-template-your-node-application-->
+    <ul>
+        <% results.forEach(function(resultsFunction) { %>
+          <li>
+            <%= result.title>
+            <br>
+            <%= result.author>
+          </li>
+        <% }); %>
+      </ul>
+
+  </body>
+</html>
+
+<!--<script>
         $( document ).ready(function() {
             <% for (let i = 0; i < result.length; i++) { %>
               document.getElementById('result').innerHTML += '<p> <%= result[i]["ID"] %>.<%= result[i]["Name"] %></p>'
               document.getElementById('result').innerHTML += '<p> Category: <%= result[i]["Category"] %><br>Comment: <%= result[i]["Comment"] %></p>' 
               <% } %>
         })
-    </script>
-  </body>
-</html>
+    </script>-->
