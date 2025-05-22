@@ -7,6 +7,8 @@
     <script src="js/bootstrap.min.js"></script>
     <script src="js/indexpage.js"></script>
     <script src="node_modules/"></script>
+    <!--Maybe importing the dbconnect script too-->
+    <script src="../dbconnect.js"></script>
     <title>Main page</title>
   </head>
   <body>
@@ -34,7 +36,7 @@
         <div class="col-md-6">
           <div class="search-container">
             <!--The input is placed inside a form so that the submitted value can be processed-->
-            <form action="">
+            <form action="/results">
               <input id="search" name="search" type="text" value="" class="form-control search-input" placeholder="Search...">
               <i class="fas fa-search search-icon"></i>
               <select name="genre" id="genreSelect" onchange="this.form.submit()">
@@ -42,7 +44,7 @@
                 <option value="Category1" <% if (category == "Category1") { %> selected <% } %> >Category1</option>
                 <option value="Category1" <% if (category == "Category1") { %> selected <% } %> >Category1</option>
               </select>
-              <button type="submit" class="btn btn-primary">Search</button>
+              <button type="submit" class="btn btn-primary" onclick="" >Search</button>
             </form>
           </div>
         </div>

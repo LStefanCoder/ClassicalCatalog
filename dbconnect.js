@@ -49,7 +49,7 @@ export {DB};
 
 //https://medium.com/@nicholasstepanov/search-your-server-side-mysql-database-from-node-js-website-400cd68049fa
 //the export statement makes this function availble in the main js file
-export function search(req, res, next)
+/*export function search(req, res, next)
 {
     var term = req.query.search;
     var category = req.query.category;
@@ -87,4 +87,10 @@ export function search(req, res, next)
             next();
         }
     })
-}
+}*/
+
+/*export function search2(searchterm)
+{
+    let query = 'SELECT * FROM MusicPieces';
+    DB.query
+}*/
