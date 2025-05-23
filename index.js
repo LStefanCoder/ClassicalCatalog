@@ -84,7 +84,12 @@ app.listen(port, (err) => {
 //async is necessary in order to wait for the response to the database query, see https://stackoverflow.com/questions/48835394/make-async-calls-in-express-server-app-get, https://stackoverflow.com/questions/72577747/how-to-use-app-get-asynchronously-in-express-js, https://stackoverflow.com/questions/63832370/node-js-waiting-for-the-db-query-results-for-the-next-step
 app.get('/results', async (req, res) => {
   //search();
-  const query = 'SELECT * FROM MusicPieces';
+
+  var searchTerm = req.query.searchbar;
+  console.log(searchTerm);
+
+  //const query = 'SELECT * FROM MusicPieces';
+  const query = " SELECT * FROM MusicPieces WHERE Title LIKE '%" + searchTerm + "%'";
   //testing a temporary database opening instead of a permanent one in dbconnect.js and export as DB
   //https://www.sqlitetutorial.net/sqlite-nodejs/
   const DBtempopen = new sql3.Database('music.db', sql3.OPEN_READONLY);
@@ -112,20 +117,19 @@ app.get('/results', async (req, res) => {
       var rowDictionary = {'ID': ID, 'Composer': Composer, 'Title': Title, 'SecondTitle': SecondTitle, 'Year': Year, 'Genre': Genre, 'Key': Key, 'Instruments': Instruments, 'Link': Link, 'XML': XML};
 
       results.push(rowDictionary);
-      console.log(results.length);
+      //console.log(results.length);
       
     })
 });
 
-await delay(2000);
+await delay(100);
 
-  console.log(results.length);
+  //console.log(results.length);
 
   //var result = req.result;
   res.render('results', {
     result: results,
     length: results.length,
-    term: req.term,
     category: req.category
   });
 
