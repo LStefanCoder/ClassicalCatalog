@@ -88,7 +88,7 @@ app.get('/results', async (req, res) => {
   var searchTerm = req.query.searchbar;
   console.log(searchTerm);
 
-  //const query = 'SELECT * FROM MusicPieces';
+  //the query with the LIKE parameter and the two percentage signs searches where that term is included either at the start or at the end or in the middle of the field
   const query = " SELECT * FROM MusicPieces WHERE Title LIKE '%" + searchTerm + "%'";
   //testing a temporary database opening instead of a permanent one in dbconnect.js and export as DB
   //https://www.sqlitetutorial.net/sqlite-nodejs/
@@ -130,12 +130,31 @@ await delay(100);
   res.render('results', {
     result: results,
     length: results.length,
-    category: req.category
+    category: req.category,
+    term: searchTerm
   });
 
   //closing the database after the necessary queries have been done
   DBtempopen.close();
 }); 
+
+//https://stackoverflow.com/questions/13747740/serving-dynamic-urls-with-express-and-mongodb, https://stackoverflow.com/questions/62607356/how-to-create-parameters-in-express-router-dynamically
+//https://sourcebae.com/blog/how-dynamic-routing-works-in-express-js/
+app.get('/works/:number', async (req, res) => 
+{
+  const ID = req.params.number;
+  var searchTerm = 'SELECT * FROM MusicPieces WHERE ID = ' + ID;
+  const DBtempopen = new sql3.Database('music.db', sql3.OPEN_READONLY);
+  var queryResult;
+
+  await DBtempopen.get(searchTerm, (error, row) => {
+    queryResult = row;
+  });
+
+  await delay(100);
+
+  res.render('piece', {result: queryResult});
+});
 
 //https://www.google.com/search?q=display+database+search+results+with+ejs&oq=display+database+search+results+with+ejs&gs_lcrp=EgZjaHJvbWUyBggAEEUYOdIBCDg5NTBqMGoxqAIIsAIB&sourceid=chrome&ie=UTF-8
 

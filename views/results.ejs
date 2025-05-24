@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <script src="js/bootstrap.min.js"></script>
-    <title>Main page</title>
+    <title>Search results</title>
   </head>
   <body>
-    <h1>Search results</h1>
+    <h1>Search results for <%= term %></h1>
     <p> <%= length %> results found!</p>
     <!--based on https://www.digitalocean.com/community/tutorials/how-to-use-ejs-to-template-your-node-application-->
     
@@ -16,6 +16,8 @@
         <div>
         <h2><%= result[i]['Composer'] %>: <%= result[i]['Title'] %></h2>
         <p><%= result[i]['Link'] %></p>
+        <!--https://stackoverflow.com/questions/42609853/i-want-to-make-href-tag-dynamic-and-value-will-be-populated-and-i-have-ejs-templ-->
+        <a href="/works/<%= result[i]['ID'] %>" class="worksLink">Link</a>
         </div>
      <% } %>
 
