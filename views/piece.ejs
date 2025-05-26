@@ -3,8 +3,9 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-    <script src="js/bootstrap.min.js"></script>
+    <!--<link href="css/bootstrap.min.css" rel="stylesheet">
+    <script src="js/bootstrap.min.js"></script>-->
+    <!--<script src="opensheetmusicdisplay.min.js"></script>-->
     <title>Main page</title>
 </head>
 <body>
@@ -13,10 +14,23 @@
     <p>Genre: <%= result['Genre'] %></p>
     <p>Year of composition: <%= result['Year'] %></p>
     <div id="sheetMusicContainer">
-        <script src="../scripts/opensheetmusicdisplay.min.js"></script>
-        <script>
-            var 
-        </script>
     </div>
+    <script>
+        var osmd = new '<%= opensheetmusicdisplay%>'.OpenSheetMusicDisplay("sheetMusicContainer");
+        osmd.setOptions({
+          backend: "svg",
+          drawTitle: true,
+          // drawingParameters: "compacttight" // don't display title, composer etc., smaller margins
+        });
+        osmd
+        //these quotes are necessary
+          .load(`<%= XML %>`)
+          .then(
+            function() {
+              osmd.render(); 
+            }
+          );
+      </script>
+        
 </body>
 </html>

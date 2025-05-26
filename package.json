@@ -25,6 +25,8 @@
     "ejs": "^3.1.10",
     "express": "^5.1.0",
     "jquery": "^3.7.1",
-    "sqlite3": "^5.1.7"
+    "opensheetmusicdisplay": "^1.9.0",
+    "sqlite3": "^5.1.7",
+    "xmlbuilder2": "^3.1.1"
   }
 }

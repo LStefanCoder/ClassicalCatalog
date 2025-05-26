@@ -6,30 +6,40 @@
 //import {search} from './dbconnect.js';
 import express from 'express';
 import bodyParser from 'body-parser';
+import opensheetmusicdisplay from 'opensheetmusicdisplay';
 
 
 import sqlite3 from 'sqlite3';
 const sql3 = sqlite3.verbose();
 
-//const port = process.env.PORT || 3000;
-/*app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});*/
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-//const express = require('express');
-//const bodyParser = require('body-parser');
+//making it possible to make the require path command, https://stackoverflow.com/questions/69099763/referenceerror-require-is-not-defined-in-es-module-scope-you-can-use-import-in 
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+
+//const path = require('path');
+
+//recreating the usual dirname variable https://iamwebwiz.medium.com/how-to-fix-dirname-is-not-defined-in-es-module-scope-34d94a86694d
+const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
+const __dirname = path.dirname(__filename); // get the name of the directory
+
+
 const app = express();
 app.use(bodyParser.json());
 //serving the site from the static folder, see https://www.youtube.com/watch?v=fyc-4YmgLu0
 app.use(express.static('public'));
+//making script files accessible from ejs, since ejs is server-side and js is client-side
+app.use(express.static(path.join(__dirname, 'views/js')));
+app.use(express.static(path.join(__dirname, 'public/js')));
+app.use(express.static(path.join(__dirname, 'scripts')));
 
 //https://stackoverflow.com/questions/70474230/node-express-error-no-default-engine-was-specified-and-no-extension-was-provide
 app.set('view engine', 'ejs');
 
 app.get('/', (req, res) => {
     res.status(200);
-    res.send("Message");
-    res.json({message: 'The message'});
 });
 
 const port = 3000;
@@ -40,7 +50,7 @@ app.listen(port, (err) => {
       //printing the error message to the console
       console.log(err.message);
     }
-    console.log("Listening on port" + port.toString());
+    console.log("Listening on port " + port.toString());
   
 });
 
@@ -146,14 +156,18 @@ app.get('/works/:number', async (req, res) =>
   var searchTerm = 'SELECT * FROM MusicPieces WHERE ID = ' + ID;
   const DBtempopen = new sql3.Database('music.db', sql3.OPEN_READONLY);
   var queryResult;
+  var queryXML;
 
   await DBtempopen.get(searchTerm, (error, row) => {
     queryResult = row;
+    //console.log(row);
+    queryXML = queryResult.XML;
   });
 
-  await delay(100);
+  await delay(500);
+  //console.log(queryResult);
 
-  res.render('piece', {result: queryResult});
+  res.render('piece', {result: queryResult, XML: queryXML, opensheetmusicdisplay: opensheetmusicdisplay});
 });
 
 //https://www.google.com/search?q=display+database+search+results+with+ejs&oq=display+database+search+results+with+ejs&gs_lcrp=EgZjaHJvbWUyBggAEEUYOdIBCDg5NTBqMGoxqAIIsAIB&sourceid=chrome&ie=UTF-8
