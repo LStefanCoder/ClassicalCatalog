@@ -11,9 +11,20 @@ import opensheetmusicdisplay from 'opensheetmusicdisplay';
 
 import sqlite3 from 'sqlite3';
 const sql3 = sqlite3.verbose();
+//this package wraps around the sqlite3 package, and can accept awaits, see https://www.npmjs.com/package/sqlite, https://stackoverflow.com/questions/64372255/how-to-use-async-await-in-sqlite3-db-get-and-db-all
+//import { open } from 'sqlite';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
+//for parsing XML code from string
+import {DOMParser, parseHTML} from 'linkedom';
+//the Node file system module, required to write files to disk
+import * as fs from 'node:fs';
+
+//import * as jsdom from 'jsdom';
+//const jsdom = require("jsdom");
+//this way of loading seems to be working with "type: module" in the package.json; https://github.com/jsdom/jsdom/issues/2514
+import { JSDOM } from 'jsdom';
 
 //making it possible to make the require path command, https://stackoverflow.com/questions/69099763/referenceerror-require-is-not-defined-in-es-module-scope-you-can-use-import-in 
 import { createRequire } from "module";
@@ -31,9 +42,13 @@ app.use(bodyParser.json());
 //serving the site from the static folder, see https://www.youtube.com/watch?v=fyc-4YmgLu0
 app.use(express.static('public'));
 //making script files accessible from ejs, since ejs is server-side and js is client-side
-app.use(express.static(path.join(__dirname, 'views/js')));
-app.use(express.static(path.join(__dirname, 'public/js')));
-app.use(express.static(path.join(__dirname, 'scripts')));
+app.use(express.static(path.join(__dirname, '/views')));
+app.use(express.static(path.join(__dirname, '/public')));
+app.use(express.static(path.join(__dirname, '/scripts')));
+
+
+//referencing the modules so that files from them can be imported, https://stackoverflow.com/questions/73272415/use-node-modules-with-ejs-and-node-js
+app.use('/node_modules', express.static(__dirname + '/node_modules/'));
 
 //https://stackoverflow.com/questions/70474230/node-express-error-no-default-engine-was-specified-and-no-extension-was-provide
 app.set('view engine', 'ejs');
@@ -154,21 +169,102 @@ app.get('/works/:number', async (req, res) =>
 {
   const ID = req.params.number;
   var searchTerm = 'SELECT * FROM MusicPieces WHERE ID = ' + ID;
+  //var searchTerm = 'SELECT * FROM MusicPieces WHERE ID = ?';
   const DBtempopen = new sql3.Database('music.db', sql3.OPEN_READONLY);
   var queryResult;
-  var queryXML;
+  var queryXML = ``;
+  var XMLSTEP1;
+  var XMLTOSEND;
+  var XMLStr = "";
+
+  //queryResult = await DBtempopen.get(searchTerm, ID);
 
   await DBtempopen.get(searchTerm, (error, row) => {
+
+    //placing the results into a dictionary, so that values can be retrieved
+
+
     queryResult = row;
     //console.log(row);
-    queryXML = queryResult.XML;
+
+      //for the XML file, parsing is needed, since text cannot contain "<"
+      //https://www.w3schools.com/xml/xml_parser.asp
+
+      //maybe????? https://stackoverflow.com/questions/2959642/how-to-make-a-valid-string-for-xml-in-javascript
+
+      //const XMLString = (new DOMParser).parseFromString(queryResult.XML, 'text/xml');
+
+      //var XMLObject = new XML();
+
+      //console.log(row.XML);
+      //XMLStr = row.XML;
+      
+      //fs.writeFile('/temp.xml', row.XML, { flag: 'a+' }, err => {});
+      
+      //queryXML = row.XML;
+
+
+
+      //console.log(queryXML);
   });
 
   await delay(500);
+
+  console.log(typeof(queryResult.XML));
+
+  //writing this xml to a file; opensheetmusicdisplay in the ejs file
+  //await fs.writeFile('/temp.xml', XMLStr, { flag: 'a+' }, err => {});
+
+  //XMLSTEP1 = new JSDOM(queryResult.XML, {contentType: "text/xml"});
+  //XMLTOSEND = XMLSTEP1
+
+  await delay(200);
   //console.log(queryResult);
 
-  res.render('piece', {result: queryResult, XML: queryXML, opensheetmusicdisplay: opensheetmusicdisplay});
+  //closing the database after the query has been finished
+  DBtempopen.close();
+
+  res.render('piece', {result: queryResult});
+  //res.render('piece', {result: queryResult, XML: queryXML, opensheetmusicdisplay: opensheetmusicdisplay});
 });
+
+//the get function for the pdf files of the individual works
+app.get('/works/:number/pdf', async (req, res) => 
+  {
+
+//https://stackoverflow.com/questions/38855299/creating-an-html-or-pdf-file-in-memory-and-streaming-it-in-node-js
+
+  const ID = req.params.number;
+  var queryResult;
+  //first, we need to get the binary of the PDF file from the database
+  var searchTerm = 'SELECT * FROM MusicPieces WHERE ID = ' + ID;
+  //the binary data from the database search will be appended here
+  var PDFFile;
+
+  const DBtempopen = new sql3.Database('music.db', sql3.OPEN_READONLY);
+
+  //writing the binary data of the pdf file from the database to a variable
+  await DBtempopen.get(searchTerm, (error, row) => {
+    queryResult = row.PDF;
+  });
+
+  await delay(200);
+
+  //assigning the binary data to the file variable, https://stackoverflow.com/questions/27159179/how-to-convert-blob-to-file-in-javascript
+  //doesn't work in node.js, only the browser
+  //PDFFile = new File([queryResult], "score.pdf");
+
+  //https://www.geeksforgeeks.org/node-js-response-setheader-method/
+
+  //setting the response header to a pdf filetype
+  //https://github.com/marcbachmann/node-html-pdf/issues/472
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', 'inline; filename=score.pdf');
+
+  //res.send is used instead of res.render, because the data file needs to be sent
+  res.send(queryResult);
+
+  });
 
 //https://www.google.com/search?q=display+database+search+results+with+ejs&oq=display+database+search+results+with+ejs&gs_lcrp=EgZjaHJvbWUyBggAEEUYOdIBCDg5NTBqMGoxqAIIsAIB&sourceid=chrome&ie=UTF-8
 
@@ -178,3 +274,13 @@ function delay(time) {
       setTimeout(resolve, time)
   });
 }
+
+//https://stackoverflow.com/questions/2959642/how-to-make-a-valid-string-for-xml-in-javascript
+//scrapped, since it only replaces the "&lt;"s in the text with other, for opensheetmusicdisplay unusable characters
+/*function encodeXml(s) {
+  return (s
+      .replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&apos;')
+      .replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/\t/g, '&#x9;').replace(/\n/g, '&#xA;').replace(/\r/g, '&#xD;')
+  );
+}*/
