@@ -31,6 +31,8 @@
     </div>-->
 
     <!--https://bootstrapexamples.com/@anonymous/search-bar-->
+    <!--https://codepen.io/bogdansandu/pen/ogNyGgm, https://www.sliderrevolution.com/resources/bootstrap-search-box/-->
+
     <div class="container">
       <div class="row justify-content-center">
         <div class="col-md-6">
@@ -39,11 +41,33 @@
             <form action="/results">
               <input id="search" name="searchbar" type="text" value="" class="form-control search-input" placeholder="Search...">
               <i class="fas fa-search search-icon"></i>
-              <select name="genre" id="genreSelect" onchange="this.form.submit()">
-                <option value="">All genres</option>
-                <option value="Category1" <% if (category == "Category1") { %> selected <% } %> >Category1</option>
-                <option value="Category1" <% if (category == "Category1") { %> selected <% } %> >Category1</option>
+              <select name="genre" id="genreSelect">
+                <option value="allGenres">All genres</option>
+                <option value="Concerto">Concerto</option>
+                <option value="Piano">Piano</option>
+                <option value="Quartet">Quartet</option>
               </select>
+              <select name="key" id="keySelect">
+                <option value="allKeys">All keys</option>
+                <option value="C Major / A minor">C Major / A minor</option>
+                <option value="G Major / E minor">G Major / E minor</option>
+                <option value="D Major / B minor">D Major / B minor</option>
+                <option value="A Major / F# minor">A Major / F# minor</option>
+                <option value="E Major / C# minor">E Major / C# minor</option>
+                <option value="B Major / G# minor">B Major / G# minor</option>
+                <option value="F# Major / D# minor">F# Major / D# minor</option>
+                <option value="C# Major / A# minor">C# Major / A# minor</option>
+                <!--the other half of the table, see https://dsmusic.com.au/wp-content/uploads/2012/01/key_sig_worksheet.pdf?srsltid=AfmBOopzeEuYXGG3JVmuDHlezCoE9aYCQEc-A-wYTdj7Ai5Dolql_log, https://en.wikipedia.org/wiki/Major_scale  diatonic scales-->
+                <option value="C Major / A minor">C Major / A minor</option>
+                <option value="F Major / D minor">F Major / D minor</option>
+                <option value="B♭ Major / G minor">B♭ Major / G minor</option>
+                <option value="E♭ Major / C minor">E♭ Major / C minor</option>
+                <option value="A♭ Major / F minor">A♭ Major / F minor</option>
+                <option value="D♭ Major / B♭ minor">D♭ Major / B♭ minor</option>
+                <option value="G♭ Major / E♭ minor">G♭ Major / E♭ minor</option>
+                <option value="C♭ Major / A♭ minor">C♭ Major / A♭ minor</option>
+              </select>
+
               <button type="submit" class="btn btn-primary" onclick="" >Search</button>
             </form>
           </div>
@@ -51,28 +75,6 @@
       </div>
 
     <!--https://getbootstrap.com/docs/5.3/components/dropdowns/-->
-    <div class="dropdown">
-      <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-        Select genre
-      </button>
-      <ul class="dropdown-menu">
-        <li><a class="dropdown-item" href="#">Action</a></li>
-        <li><a class="dropdown-item" href="#">Another action</a></li>
-        <li><a class="dropdown-item" href="#">Something else here</a></li>
-      </ul>
-    </div>
-
-    <div class="dropdown">
-      <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-        Select key
-      </button>
-      <ul class="dropdown-menu">
-        <li><a class="dropdown-item" href="#">Action</a></li>
-        <li><a class="dropdown-item" href="#">Another action</a></li>
-        <li><a class="dropdown-item" href="#">Something else here</a></li>
-      </ul>
-    </div>
-
 
 
     <!--taken from https://mdbootstrap.com/snippets/standard/mdbootstrap/2909474?view=side#-->

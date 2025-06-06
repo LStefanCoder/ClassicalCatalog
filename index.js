@@ -21,10 +21,13 @@ import {DOMParser, parseHTML} from 'linkedom';
 //the Node file system module, required to write files to disk
 import * as fs from 'node:fs';
 
-//import * as jsdom from 'jsdom';
-//const jsdom = require("jsdom");
 //this way of loading seems to be working with "type: module" in the package.json; https://github.com/jsdom/jsdom/issues/2514
 import { JSDOM } from 'jsdom';
+//https://github.com/oozcitak/xmlbuilder2
+import xmlbuilder2 from 'xmlbuilder2';
+
+import OpenSheetMusicDisplay from 'opensheetmusicdisplay';
+const { OSMDisplay } = OpenSheetMusicDisplay;
 
 //making it possible to make the require path command, https://stackoverflow.com/questions/69099763/referenceerror-require-is-not-defined-in-es-module-scope-you-can-use-import-in 
 import { createRequire } from "module";
@@ -69,52 +72,55 @@ app.listen(port, (err) => {
   
 });
 
-//https://www.geeksforgeeks.org/how-to-make-a-search-function-using-node-express-and-mysql/
-/*app.get('/search', (req, res) => {
-  const searchTerm = req.query.term;
-    if (!searchTerm) {
-        return res.status(400)
-            .json(
-                {
-                    error: 'Search term is required'
-                }
-            );
-    }
-
-    const query = `
-    SELECT * FROM MusicPieces
-    WHERE Title LIKE ?
-  `;
-
-    // Use '%' to perform a partial match
-    const searchValue = `%${searchTerm}%`;
-
-    DB.query(query, [searchValue, searchValue],
-        (err, results) => {
-            if (err) {
-                console
-                    .error('Error executing search query:', err);
-                return res.status(500)
-                    .json(
-                        {
-                            error: 'Internal server error'
-                        });
-            }
-
-            res.json(results);
-        });
-});*/
-
 //https://medium.com/@nicholasstepanov/search-your-server-side-mysql-database-from-node-js-website-400cd68049fa
 //async is necessary in order to wait for the response to the database query, see https://stackoverflow.com/questions/48835394/make-async-calls-in-express-server-app-get, https://stackoverflow.com/questions/72577747/how-to-use-app-get-asynchronously-in-express-js, https://stackoverflow.com/questions/63832370/node-js-waiting-for-the-db-query-results-for-the-next-step
 app.get('/results', async (req, res) => {
-  //search();
 
   var searchTerm = req.query.searchbar;
   console.log(searchTerm);
 
-  //the query with the LIKE parameter and the two percentage signs searches where that term is included either at the start or at the end or in the middle of the field
-  const query = " SELECT * FROM MusicPieces WHERE Title LIKE '%" + searchTerm + "%'";
+  //selecting the correct key and genre for the search
+  var key = req.query.key;
+  var genre = req.query.genre;
+
+  var query;
+
+  if(req.query.key == "allKeys")
+    {
+      if(req.query.genre == "allGenres")
+        {
+          //the query with the LIKE parameter and the two percentage signs searches where that term is included either at the start or at the end or in the middle of the field
+          query = " SELECT * FROM MusicPieces WHERE Title LIKE '%" + searchTerm + "%'";
+        }
+
+      else
+        {
+          query = " SELECT * FROM MusicPieces WHERE Title LIKE '%" + searchTerm + "%' AND Genre = '" + genre + "'";
+        }
+    }
+
+    else
+    {
+
+      key = key.split("/");
+
+      //the trim method removes whitespaces from the start and end of strings while keeping the original, see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/trim
+      key[0] = key[0].trim();
+      key[1] = key[1].trim();
+
+      if(req.query.genre == "allGenres")
+        {
+          query = " SELECT * FROM MusicPieces WHERE Title LIKE '%" + searchTerm + "%' AND Key = '" + key[0] + "' OR Key = '" + key[1] + "'";
+        }
+
+      else
+        {
+          query = " SELECT * FROM MusicPieces WHERE Title LIKE '%" + searchTerm + "%' AND Key = '" + key[0] + "' OR Key = '" + key[1] + "' AND Genre = '" + genre + "'";
+        }
+    }
+
+    await delay(100);
+  
   //testing a temporary database opening instead of a permanent one in dbconnect.js and export as DB
   //https://www.sqlitetutorial.net/sqlite-nodejs/
   const DBtempopen = new sql3.Database('music.db', sql3.OPEN_READONLY);
@@ -181,51 +187,33 @@ app.get('/works/:number', async (req, res) =>
 
   await DBtempopen.get(searchTerm, (error, row) => {
 
-    //placing the results into a dictionary, so that values can be retrieved
-
-
     queryResult = row;
     //console.log(row);
-
-      //for the XML file, parsing is needed, since text cannot contain "<"
-      //https://www.w3schools.com/xml/xml_parser.asp
-
-      //maybe????? https://stackoverflow.com/questions/2959642/how-to-make-a-valid-string-for-xml-in-javascript
-
-      //const XMLString = (new DOMParser).parseFromString(queryResult.XML, 'text/xml');
-
-      //var XMLObject = new XML();
-
-      //console.log(row.XML);
-      //XMLStr = row.XML;
-      
-      //fs.writeFile('/temp.xml', row.XML, { flag: 'a+' }, err => {});
-      
-      //queryXML = row.XML;
-
-
-
-      //console.log(queryXML);
   });
 
-  await delay(500);
+  await delay(100);
 
   console.log(typeof(queryResult.XML));
 
-  //writing this xml to a file; opensheetmusicdisplay in the ejs file
-  //await fs.writeFile('/temp.xml', XMLStr, { flag: 'a+' }, err => {});
+  //using the xmlbuilder2 module to build an XML file from the string, //https://github.com/oozcitak/xmlbuilder2
 
-  //XMLSTEP1 = new JSDOM(queryResult.XML, {contentType: "text/xml"});
-  //XMLTOSEND = XMLSTEP1
+  const xmlStr = queryResult.XML;
+  const xmlDoc = xmlbuilder2.create(xmlStr);
+
+
+
+
+
+
+
+
 
   await delay(200);
-  //console.log(queryResult);
 
   //closing the database after the query has been finished
   DBtempopen.close();
 
-  res.render('piece', {result: queryResult});
-  //res.render('piece', {result: queryResult, XML: queryXML, opensheetmusicdisplay: opensheetmusicdisplay});
+  res.render('piece', {result: queryResult, XML: xmlDoc, osmdisplay: OSMDisplay});
 });
 
 //the get function for the pdf files of the individual works
@@ -261,7 +249,7 @@ app.get('/works/:number/pdf', async (req, res) =>
   res.setHeader('Content-Type', 'application/pdf');
   res.setHeader('Content-Disposition', 'inline; filename=score.pdf');
 
-  //res.send is used instead of res.render, because the data file needs to be sent
+  //res.send is used instead of res.render, because the data file needs to be sent and not an ejs template rendered
   res.send(queryResult);
 
   });
@@ -274,13 +262,3 @@ function delay(time) {
       setTimeout(resolve, time)
   });
 }
-
-//https://stackoverflow.com/questions/2959642/how-to-make-a-valid-string-for-xml-in-javascript
-//scrapped, since it only replaces the "&lt;"s in the text with other, for opensheetmusicdisplay unusable characters
-/*function encodeXml(s) {
-  return (s
-      .replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&apos;')
-      .replace(/</g, '&lt;').replace(/>/g, '&gt;')
-      .replace(/\t/g, '&#x9;').replace(/\n/g, '&#xA;').replace(/\r/g, '&#xD;')
-  );
-}*/
