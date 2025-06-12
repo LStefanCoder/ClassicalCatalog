@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/piece.css" rel="stylesheet" >
     <script src="../js/bootstrap.min.js"></script>
     
     
@@ -15,50 +16,13 @@
 <body>
     <h1><%= result['Title'] %></h1>
     <h2>Composed by <%= result['Composer'] %></h2>
+    <p>Link: <%= result['Link'] %></p>
     <p>Genre: <%= result['Genre'] %></p>
-    <p>Year of composition: <%= result['Year'] %></p>
-    <p><a href="/works/<%= result['ID'] %>/pdf"">PDF link</a></p>
-    <!--contains the XML data-->
-    <div id="sheetMusicContainer">
-    </div>
-    <script>
-      
-        var XMLStartString = `<%= result['XML'] %>`;
-        var XMLUnescapedString = XMLStartString.replace(/&amp;/g, '&')
-  .replace(/&lt;/g, '<')
-  .replace(/&gt;/g, '>')
-  .replace(/&quot;/g, '"')
-  .replace(/&#34;/g, '"')
-  .replace(/&#39;/g, "'");;
-        //var XMLString1 = new DOMParser().parseFromString(XMLUnescapedString, "text/xml");
-
-        
-
-        var XMLString = XMLUnescapedString;
-        //console.log(XMLString);
-        /*//first, we assign the XML variable to a string
-        var XMLStartString = `<%= result['XML'] %>`;
-        var XMLString1 = new DOMParser().parseFromString(XMLStartString, "text/xml");
-        var XMLString2 = XMLString1.documentElement.textContent;
-        console.log(XMLString2);*/
-
-        //var osmd = new opensheetmusicdisplay.OpenSheetMusicDisplay("sheetMusicContainer");
-        var osmd = new opensheetmusicdisplay.OpenSheetMusicDisplay("sheetMusicContainer");
-        osmd.setOptions({
-          //all options see https://github.com/opensheetmusicdisplay/opensheetmusicdisplay/blob/master/src/OpenSheetMusicDisplay/OSMDOptions.ts
-          backend: "svg",
-          //disabled, because the credits are already displayed above
-          drawCredits: false,
-          drawingParameters: "compacttight" // don't display title, composer etc., smaller margins
-        });
-        osmd
-          .load(XMLString)
-          .then(
-            function() {
-              osmd.render(); 
-            }
-          );
-      </script>
+    <p>Key: <%= result['Key'] %></p>
+    <p>Instruments: <%=  %></p>
+    <!--PDF icon from svgrepo.com, CC0 license-->
+    <p><a href="/works/<%= result['ID'] %>/pdf""><img src="../svg/pdf-file-format-symbol-svgrepo-com.svg" alt="" style="height: 50px" class="pdfIcon"></a></p>
+    
         
 </body>
 </html>

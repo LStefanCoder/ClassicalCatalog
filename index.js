@@ -200,14 +200,6 @@ app.get('/works/:number', async (req, res) =>
   const xmlStr = queryResult.XML;
   const xmlDoc = xmlbuilder2.create(xmlStr);
 
-
-
-
-
-
-
-
-
   await delay(200);
 
   //closing the database after the query has been finished

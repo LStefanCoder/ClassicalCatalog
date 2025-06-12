@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/index.css" rel="stylesheet">
     <script src="js/bootstrap.min.js"></script>
     <script src="js/indexpage.js"></script>
     <script src="node_modules/"></script>
@@ -13,41 +14,32 @@
   </head>
   <body>
     <script>import $ from 'jquery'; //importing jquery, see https://stackoverflow.com/questions/58320283/how-do-i-use-jquery-in-my-html-after-npm-install</script>
-    <h1>Index page</h1>
-    <p>Search criteria</p>
-
-    <p>Please search the music database</p>
-
-    <!--Search bar from -->
-
-    <!--<div class="input-group">
-      <div class="form-outline" data-mdb-input-init>
-        <input type="search" id="form1" class="form-control" />
-        <label class="form-label" for="form1">Search</label>
-      </div>
-      <button type="submit" class="btn btn-primary" data-mdb-ripple-init onclick="">
-        <i class="fas fa-search"></i>
-      </button>
-    </div>-->
 
     <!--https://bootstrapexamples.com/@anonymous/search-bar-->
     <!--https://codepen.io/bogdansandu/pen/ogNyGgm, https://www.sliderrevolution.com/resources/bootstrap-search-box/-->
 
-    <div class="container">
-      <div class="row justify-content-center">
-        <div class="col-md-6">
-          <div class="search-container">
-            <!--The input is placed inside a form so that the submitted value can be processed-->
-            <form action="/results">
-              <input id="search" name="searchbar" type="text" value="" class="form-control search-input" placeholder="Search...">
-              <i class="fas fa-search search-icon"></i>
-              <select name="genre" id="genreSelect">
-                <option value="allGenres">All genres</option>
-                <option value="Concerto">Concerto</option>
-                <option value="Piano">Piano</option>
-                <option value="Quartet">Quartet</option>
-              </select>
-              <select name="key" id="keySelect">
+      <div class="form-container">
+        <h2 class="mb-4">Music database search</h2>
+        <form action="/results">
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <input id="search" name="searchbar" type="text" class="form-control custom-input" placeholder="Type music title keyword" aria-label="Keywords">
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <p class="search-label"><i class="bi bi-cash-stack me-2"></i>Genres</p>
+                <select name="genre" id="genreSelect" class="form-select">
+                  <option value="allGenres">All genres</option>
+                  <option value="Concerto">Concerto</option>
+                  <option value="Piano">Piano</option>
+                  <option value="String Quartet">Quartet</option>
+                </select>
+            </div>
+
+            <div class="mb-4">
+              <p class="search-label"><i class="bi bi-cash-stack me-2"></i>Key</p>
+              <select name="key" id="keySelect" class="form-select">
                 <option value="allKeys">All keys</option>
                 <option value="C Major / A minor">C Major / A minor</option>
                 <option value="G Major / E minor">G Major / E minor</option>
@@ -67,133 +59,15 @@
                 <option value="G♭ Major / E♭ minor">G♭ Major / E♭ minor</option>
                 <option value="C♭ Major / A♭ minor">C♭ Major / A♭ minor</option>
               </select>
-
-              <button type="submit" class="btn btn-primary" onclick="" >Search</button>
-            </form>
           </div>
-        </div>
-      </div>
-
-    <!--https://getbootstrap.com/docs/5.3/components/dropdowns/-->
-
-
-    <!--taken from https://mdbootstrap.com/snippets/standard/mdbootstrap/2909474?view=side#-->
-    <!--
-    <section class="intro">
-      <div class="bg-image h-100" style="
-              background-color: #d9eff5;
-            ">
-        <div class="mask d-flex align-items-center h-100">
-          <div class="container">
-            <div class="row">
-              <div class="col-md-10 col-lg-8 col-xl-7 mx-auto">
-                <div class="card">
-                  <div class="card-header">
-                    <div class="input-group input-group-lg">
-                      <input type="text" class="form-control form-control-lg rounded" placeholder="Type Keywords"
-                        aria-label="Type Keywords" aria-describedby="basic-addon2" />
-                      <span class="input-group-text border-0" id="basic-addon2"><i class="fas fa-search"></i></span>
-                    </div>
-                  </div>
-                  <div class="card-body p-4">
-                    <h6 class="text-muted text-uppercase mt-3 mb-4">ADVANCED SEARCH</h6>
-                    <div class="row">
-                      <div class="col-md-4 mb-3">
-                        <div class="dropdown">
-                          <a class="btn btn-outline-info btn-lg btn-block dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                            data-mdb-toggle="dropdown" aria-expanded="false">
-                            Accessories
-                          </a>
-                          <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                            <li><a class="dropdown-item" href="#">Action</a></li>
-                            <li><a class="dropdown-item" href="#">Another action</a></li>
-                            <li><a class="dropdown-item" href="#">Something else here</a></li>
-                          </ul>
-                        </div>
-                      </div>
-                      <div class="col-md-4 mb-3">
-                        <div class="dropdown">
-                          <a class="btn btn-outline-info btn-lg btn-block dropdown-toggle" href="#" role="button" id="dropdownMenuLink1"
-                            data-mdb-toggle="dropdown" aria-expanded="false">
-                            Color
-                          </a>
-                          <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink1">
-                            <li><a class="dropdown-item" href="#">Action</a></li>
-                            <li><a class="dropdown-item" href="#">Another action</a></li>
-                            <li><a class="dropdown-item" href="#">Something else here</a></li>
-                          </ul>
-                        </div>
-                      </div>
-                      <div class="col-md-4 mb-3">
-                        <div class="dropdown">
-                          <a class="btn btn-outline-info btn-lg btn-block dropdown-toggle" href="#" role="button" id="dropdownMenuLink2"
-                            data-mdb-toggle="dropdown" aria-expanded="false">
-                            Size
-                          </a>
-                          <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink2">
-                            <li><a class="dropdown-item" href="#">Action</a></li>
-                            <li><a class="dropdown-item" href="#">Another action</a></li>
-                            <li><a class="dropdown-item" href="#">Something else here</a></li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="row">
-                      <div class="col-md-4 mb-3">
-                        <div class="dropdown">
-                          <a class="btn btn-outline-info btn-lg btn-block dropdown-toggle" href="#" role="button" id="dropdownMenuLink3"
-                            data-mdb-toggle="dropdown" aria-expanded="false">
-                            Sale
-                          </a>
-                          <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink3">
-                            <li><a class="dropdown-item" href="#">Action</a></li>
-                            <li><a class="dropdown-item" href="#">Another action</a></li>
-                            <li><a class="dropdown-item" href="#">Something else here</a></li>
-                          </ul>
-                        </div>
-                      </div>
-                      <div class="col-md-4 mb-3">
-                        <div class="dropdown">
-                          <a class="btn btn-outline-info btn-lg btn-block dropdown-toggle" href="#" role="button" id="dropdownMenuLink4"
-                            data-mdb-toggle="dropdown" aria-expanded="false">
-                            Time
-                          </a>
-                          <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink4">
-                            <li><a class="dropdown-item" href="#">Action</a></li>
-                            <li><a class="dropdown-item" href="#">Another action</a></li>
-                            <li><a class="dropdown-item" href="#">Something else here</a></li>
-                          </ul>
-                        </div>
-                      </div>
-                      <div class="col-md-4 mb-3">
-                        <div class="dropdown">
-                          <a class="btn btn-outline-info btn-lg btn-block dropdown-toggle" href="#" role="button" id="dropdownMenuLink5"
-                            data-mdb-toggle="dropdown" aria-expanded="false">
-                            Type
-                          </a>
-                          <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink5">
-                            <li><a class="dropdown-item" href="#">Action</a></li>
-                            <li><a class="dropdown-item" href="#">Another action</a></li>
-                            <li><a class="dropdown-item" href="#">Something else here</a></li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center mt-4">
-                      <p class="text-muted mb-0"><span class="text-info">108 </span>results</p>
-                      <div>
-                        <button type="button" class="btn btn-link text-body" data-mdb-ripple-color="dark">Reset</button>
-                        <button type="button" class="btn btn-info">Search</button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>-->
+            
+            <button class="btn btn-primary w-100 py-3 search-btn" type="submit" onclick="">
+              <!--Icon by feather icons, MIT license, https://github.com/feathericons/feather-->
+                Search <img src="svg/feather-search.svg" alt="" style="height: 20px"> 
+            </button>
+        </form>
+    </div>
+</div>
 
   </body>
 </html>

@@ -1,0 +1,30 @@
+body {
+  margin: 20px;
+}
+
+.card {
+  background: #fff;
+  border: 5px solid #0049e6;
+  color: rgb(0, 0, 0);
+  margin-bottom: 2rem;
+}
+
+.btn {
+  border: 3px solid #0049e6;
+  border-image-slice: 1;
+  background: #001b57;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  /*border-image-source:  var(--gradient) !important; */
+  text-decoration: none;
+  transition: all .4s ease;
+}
+
+.btn:hover, .btn:focus {
+  background: #76a1fd;
+  -webkit-background-clip: none !important;
+  -webkit-text-fill-color: #fff !important;
+  border: 3px solid #0049e6; 
+  box-shadow: #222 1px 0 10px;
+  text-decoration: underline;
+}
