@@ -26,6 +26,13 @@ import { JSDOM } from 'jsdom';
 //https://github.com/oozcitak/xmlbuilder2
 import xmlbuilder2 from 'xmlbuilder2';
 
+//https://book.verovio.org/installing-or-building-from-sources/javascript-and-webassembly.html
+//Verovio supports converting from MusicXML to Midi
+//this import method is specifically for the ESM type imports
+import createVerovioModule from 'verovio/wasm';
+import { VerovioToolkit } from 'verovio/esm';
+import fs from 'node:fs';
+
 import OpenSheetMusicDisplay from 'opensheetmusicdisplay';
 const { OSMDisplay } = OpenSheetMusicDisplay;
 
@@ -82,6 +89,8 @@ app.get('/results', async (req, res) => {
   //selecting the correct key and genre for the search
   var key = req.query.key;
   var genre = req.query.genre;
+  var instruments = req.query.instruments;
+  //var year = 
 
   var query;
 
@@ -89,13 +98,28 @@ app.get('/results', async (req, res) => {
     {
       if(req.query.genre == "allGenres")
         {
-          //the query with the LIKE parameter and the two percentage signs searches where that term is included either at the start or at the end or in the middle of the field
-          query = " SELECT * FROM MusicPieces WHERE Title LIKE '%" + searchTerm + "%'";
+          if(req.query.instruments == "allInstruments")
+            {
+              //the query with the LIKE parameter and the two percentage signs searches where that term is included either at the start or at the end or in the middle of the field
+              query = " SELECT * FROM MusicPieces WHERE Title LIKE '%" + searchTerm + "%'";
+            }
+          else
+            {
+              query = " SELECT * FROM MusicPieces WHERE Title LIKE '%" + searchTerm + "%' AND Instruments = '" + instruments + "'";
+            } 
         }
 
       else
         {
-          query = " SELECT * FROM MusicPieces WHERE Title LIKE '%" + searchTerm + "%' AND Genre = '" + genre + "'";
+          if(req.query.instruments == "allInstruments")
+            {
+              query = " SELECT * FROM MusicPieces WHERE Title LIKE '%" + searchTerm + "%' AND Genre = '" + genre + "'";
+            }
+          else
+            {
+              query = " SELECT * FROM MusicPieces WHERE Title LIKE '%" + searchTerm + "%' AND Genre = '" + genre + "' AND Instruments = '" + instruments + "'";
+            }
+          
         }
     }
 
@@ -110,12 +134,29 @@ app.get('/results', async (req, res) => {
 
       if(req.query.genre == "allGenres")
         {
-          query = " SELECT * FROM MusicPieces WHERE Title LIKE '%" + searchTerm + "%' AND Key = '" + key[0] + "' OR Key = '" + key[1] + "'";
+          if(req.query.instruments == "allInstruments")
+            {
+              query = " SELECT * FROM MusicPieces WHERE Title LIKE '%" + searchTerm + "%' AND Key = '" + key[0] + "' OR Key = '" + key[1] + "'";
+            }
+
+          else
+          {
+            query = " SELECT * FROM MusicPieces WHERE Title LIKE '%" + searchTerm + "%' AND Key = '" + key[0] + "' OR Key = '" + key[1] + "' AND Instruments = '" + instruments + "'";
+          }
+          
         }
 
       else
         {
-          query = " SELECT * FROM MusicPieces WHERE Title LIKE '%" + searchTerm + "%' AND Key = '" + key[0] + "' OR Key = '" + key[1] + "' AND Genre = '" + genre + "'";
+          if(req.query.instruments == "allInstruments")
+            {
+              query = " SELECT * FROM MusicPieces WHERE Title LIKE '%" + searchTerm + "%' AND Key = '" + key[0] + "' OR Key = '" + key[1] + "' AND Genre = '" + genre + "'";
+            }
+          else
+          {
+            query = " SELECT * FROM MusicPieces WHERE Title LIKE '%" + searchTerm + "%' AND Key = '" + key[0] + "' OR Key = '" + key[1] + "' AND Genre = '" + genre + "' AND Instruments = '" + instruments + "'";
+          }
+          
         }
     }
 
@@ -183,6 +224,8 @@ app.get('/works/:number', async (req, res) =>
   var XMLTOSEND;
   var XMLStr = "";
 
+  var MIDIData;
+
   //queryResult = await DBtempopen.get(searchTerm, ID);
 
   await DBtempopen.get(searchTerm, (error, row) => {
@@ -205,7 +248,17 @@ app.get('/works/:number', async (req, res) =>
   //closing the database after the query has been finished
   DBtempopen.close();
 
-  res.render('piece', {result: queryResult, XML: xmlDoc, osmdisplay: OSMDisplay});
+  //opening Verovio and converting the MusicXML to MEI and that to MIDI
+  createVerovioModule().then(VerovioModule => {
+    const verovioToolkit = new VerovioToolkit(VerovioModule);
+    const score = xmlDoc;
+    verovioToolkit.loadData(score);
+    //rendering the score to MIDI data, which is then sent to the browser
+    //https://book.verovio.org/verovio-reference-book.pdf, p. 29
+    MIDIData = verovioToolkit.renderToMIDI();
+ });
+
+  res.render('piece', {result: queryResult, XML: xmlDoc, osmdisplay: OSMDisplay, midiData: MIDIData});
 });
 
 //the get function for the pdf files of the individual works
