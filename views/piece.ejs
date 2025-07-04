@@ -14,14 +14,47 @@
     <title>Main page</title>
 </head>
 <body>
+    <!--the back arrow redirects to the original page-->
+    <a href=""><img src="../svg/left-arrow-circle2-svgrepo-com.svg" alt="" style="height: 25px" class="pdfIcon"></a>
     <h1><%= result['Title'] %></h1>
     <h2>Composed by <%= result['Composer'] %></h2>
     <p>Link: <%= result['Link'] %></p>
     <p>Genre: <%= result['Genre'] %></p>
     <p>Key: <%= result['Key'] %></p>
-    <p>Instruments: <%=  %></p>
+    <p>Instruments: <%= result['Instruments'] %></p>
+    <p>Year: <%= result['Year'] %></p>
     <!--PDF icon from svgrepo.com, CC0 license-->
+    <!--the link to the PDF file of the score-->
     <p><a href="/works/<%= result['ID'] %>/pdf""><img src="../svg/pdf-file-format-symbol-svgrepo-com.svg" alt="" style="height: 50px" class="pdfIcon"></a></p>
+
+    <!--this page leads the user to further information about the composer-->
+    <p><a href="/composers/<%= composer['ID'] %>">Information about the composer</a></p>
+
+
+    <!--this div contains the score as rendered by OSMD-->
+    <!--the height of the score can be adjusted here-->
+    <div id="sheetMusicContainer" style="height: 100px"></div>
+
+    <!--this code will show the first page of the score-->
+    <script>
+      //the OSMD standard code, taken from the main wiki
+
+      var osmd = new opensheetmusicdisplay.OpenSheetMusicDisplay("sheetMusicContainer");
+        osmd.setOptions({
+          //all options see https://github.com/opensheetmusicdisplay/opensheetmusicdisplay/blob/master/src/OpenSheetMusicDisplay/OSMDOptions.ts
+          backend: "svg",
+          //disabled, because the credits are already displayed above
+          drawCredits: false,
+          drawingParameters: "compacttight" // don't display title, composer etc., smaller margins
+        });
+        osmd
+          .load(XMLString)
+          .then(
+            function() {
+              osmd.render(); 
+            }
+          );
+    </script>
     
     <!--the unused Opensheetmusicdisplay code-->    
 

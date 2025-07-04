@@ -31,7 +31,7 @@ import xmlbuilder2 from 'xmlbuilder2';
 //this import method is specifically for the ESM type imports
 import createVerovioModule from 'verovio/wasm';
 import { VerovioToolkit } from 'verovio/esm';
-import fs from 'node:fs';
+//import fs from 'node:fs';
 
 import OpenSheetMusicDisplay from 'opensheetmusicdisplay';
 const { OSMDisplay } = OpenSheetMusicDisplay;
@@ -90,7 +90,7 @@ app.get('/results', async (req, res) => {
   var key = req.query.key;
   var genre = req.query.genre;
   var instruments = req.query.instruments;
-  //var year = 
+  var year = req.query.year;
 
   var query;
 
@@ -101,11 +101,11 @@ app.get('/results', async (req, res) => {
           if(req.query.instruments == "allInstruments")
             {
               //the query with the LIKE parameter and the two percentage signs searches where that term is included either at the start or at the end or in the middle of the field
-              query = " SELECT * FROM MusicPieces WHERE Title LIKE '%" + searchTerm + "%'";
+              query = " SELECT * FROM MusicPieces WHERE Title LIKE '%" + searchTerm + "%' OR Composer LIKE '%" + searchTerm + "%'";
             }
           else
             {
-              query = " SELECT * FROM MusicPieces WHERE Title LIKE '%" + searchTerm + "%' AND Instruments = '" + instruments + "'";
+              query = " SELECT * FROM MusicPieces WHERE (Title LIKE '%" + searchTerm + "%' OR Composer LIKE '%" + searchTerm + "%') AND Instruments = '" + instruments + "'";
             } 
         }
 
@@ -113,11 +113,11 @@ app.get('/results', async (req, res) => {
         {
           if(req.query.instruments == "allInstruments")
             {
-              query = " SELECT * FROM MusicPieces WHERE Title LIKE '%" + searchTerm + "%' AND Genre = '" + genre + "'";
+              query = " SELECT * FROM MusicPieces WHERE (Title LIKE '%" + searchTerm + "%' OR Composer LIKE '%" + searchTerm + "%') AND Genre = '" + genre + "'";
             }
           else
             {
-              query = " SELECT * FROM MusicPieces WHERE Title LIKE '%" + searchTerm + "%' AND Genre = '" + genre + "' AND Instruments = '" + instruments + "'";
+              query = " SELECT * FROM MusicPieces WHERE (Title LIKE '%" + searchTerm + "%' OR Composer LIKE '%" + searchTerm + "%') AND Genre = '" + genre + "' AND Instruments = '" + instruments + "'";
             }
           
         }
@@ -136,12 +136,12 @@ app.get('/results', async (req, res) => {
         {
           if(req.query.instruments == "allInstruments")
             {
-              query = " SELECT * FROM MusicPieces WHERE Title LIKE '%" + searchTerm + "%' AND Key = '" + key[0] + "' OR Key = '" + key[1] + "'";
+              query = " SELECT * FROM MusicPieces WHERE (Title LIKE '%" + searchTerm + "%' OR Composer LIKE '%" + searchTerm + "%') AND Key = '" + key[0] + "' OR Key = '" + key[1] + "'";
             }
 
           else
           {
-            query = " SELECT * FROM MusicPieces WHERE Title LIKE '%" + searchTerm + "%' AND Key = '" + key[0] + "' OR Key = '" + key[1] + "' AND Instruments = '" + instruments + "'";
+            query = " SELECT * FROM MusicPieces WHERE (Title LIKE '%" + searchTerm + "%' OR Composer LIKE '%" + searchTerm + "%') AND Key = '" + key[0] + "' OR Key = '" + key[1] + "' AND Instruments = '" + instruments + "'";
           }
           
         }
@@ -150,11 +150,11 @@ app.get('/results', async (req, res) => {
         {
           if(req.query.instruments == "allInstruments")
             {
-              query = " SELECT * FROM MusicPieces WHERE Title LIKE '%" + searchTerm + "%' AND Key = '" + key[0] + "' OR Key = '" + key[1] + "' AND Genre = '" + genre + "'";
+              query = " SELECT * FROM MusicPieces WHERE (Title LIKE '%" + searchTerm + "%' OR Composer LIKE '%" + searchTerm + "%') AND Key = '" + key[0] + "' OR Key = '" + key[1] + "' AND Genre = '" + genre + "'";
             }
           else
           {
-            query = " SELECT * FROM MusicPieces WHERE Title LIKE '%" + searchTerm + "%' AND Key = '" + key[0] + "' OR Key = '" + key[1] + "' AND Genre = '" + genre + "' AND Instruments = '" + instruments + "'";
+            query = " SELECT * FROM MusicPieces WHERE (Title LIKE '%" + searchTerm + "%' OR Composer LIKE '%" + searchTerm + "%') AND Key = '" + key[0] + "' OR Key = '" + key[1] + "' AND Genre = '" + genre + "' AND Instruments = '" + instruments + "'";
           }
           
         }
@@ -192,6 +192,9 @@ app.get('/results', async (req, res) => {
       //console.log(results.length);
       
     })
+
+    //storing the current URL in a variable, https://stackoverflow.com/questions/33120874/node-js-get-previous-url
+    //req.session.currentUrl = ;
 });
 
 await delay(100);
@@ -216,9 +219,16 @@ app.get('/works/:number', async (req, res) =>
 {
   const ID = req.params.number;
   var searchTerm = 'SELECT * FROM MusicPieces WHERE ID = ' + ID;
+  //this search term is used to retrieve the "further information" link and sending it to the page about the individual music piece
+  var composerSearchTerm;
+  //this variable is for storing an array of the individual parts of the full name of the composer
+  //var composerNameArray;
   //var searchTerm = 'SELECT * FROM MusicPieces WHERE ID = ?';
   const DBtempopen = new sql3.Database('music.db', sql3.OPEN_READONLY);
+  const DBcomposer = new sql3.Database('composers.db', sql3.OPEN_READONLY);
+  
   var queryResult;
+  var composerResult;
   var queryXML = ``;
   var XMLSTEP1;
   var XMLTOSEND;
@@ -248,17 +258,34 @@ app.get('/works/:number', async (req, res) =>
   //closing the database after the query has been finished
   DBtempopen.close();
 
+  //separating the individual words in the name of the composer
+  //for the .match command, see https://stackoverflow.com/questions/9401897/split-a-string-using-whitespace-in-javascript
+  //composerNameArray = queryResult.Composer.match(/\w+/g);
+
+  composerSearchTerm = 'SELECT * FROM Composers WHERE Name = ' + queryResult.Composer;
+  console.loog(composerSearchTerm);
+  console.log(composerSearchTerm);
+
+  await DBcomposer.get(composerSearchTerm, (error, row2) => {
+    composerResult = row2;
+    console.log(row2);
+  });
+
+  await delay(200);
+
+  DBcomposer.close();
+
   //opening Verovio and converting the MusicXML to MEI and that to MIDI
-  createVerovioModule().then(VerovioModule => {
+  /*createVerovioModule().then(VerovioModule => {
     const verovioToolkit = new VerovioToolkit(VerovioModule);
     const score = xmlDoc;
     verovioToolkit.loadData(score);
     //rendering the score to MIDI data, which is then sent to the browser
     //https://book.verovio.org/verovio-reference-book.pdf, p. 29
     MIDIData = verovioToolkit.renderToMIDI();
- });
+ });*/
 
-  res.render('piece', {result: queryResult, XML: xmlDoc, osmdisplay: OSMDisplay, midiData: MIDIData});
+  res.render('piece', {result: queryResult, composer: composerResult, XML: xmlDoc, osmdisplay: OSMDisplay, midiData: MIDIData});
 });
 
 //the get function for the pdf files of the individual works
@@ -296,6 +323,27 @@ app.get('/works/:number/pdf', async (req, res) =>
 
   //res.send is used instead of res.render, because the data file needs to be sent and not an ejs template rendered
   res.send(queryResult);
+
+  });
+
+//this function opens a page of the individual composer
+app.get('/composers/:number', async (req, res) =>
+  {
+
+    const ID = req.params.number;
+    var queryResult;
+
+    searchTerm = 'SELECT * FROM Composers WHERE Name = ' + ID;
+    
+    const DBtempopen = new sql3.Database('composers.db', sql3.OPEN_READONLY);
+
+    await DBtempopen.get(searchTerm, (error, row) => {
+      queryResult = row.PDF;
+    });
+
+    await delay(200);
+
+    res.render('composer', {result: queryResult});
 
   });
 
