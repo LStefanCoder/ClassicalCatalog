@@ -15,10 +15,10 @@
 </head>
 <body>
     <!--the back arrow redirects to the original page-->
-    <a href=""><img src="../svg/left-arrow-circle2-svgrepo-com.svg" alt="" style="height: 25px" class="pdfIcon"></a>
+    <a href="<%= previousURL %>"><img src="../svg/left-arrow-circle2-svgrepo-com.svg" alt="" style="height: 50px" class="pdfIcon"></a>
     <h1><%= result['Title'] %></h1>
     <h2>Composed by <%= result['Composer'] %></h2>
-    <p>Link: <%= result['Link'] %></p>
+    <p><a href="<%= result['Link'] %>">Source: <%= result['Link'] %></a></p>
     <p>Genre: <%= result['Genre'] %></p>
     <p>Key: <%= result['Key'] %></p>
     <p>Instruments: <%= result['Instruments'] %></p>
@@ -36,7 +36,7 @@
     <div id="sheetMusicContainer" style="height: 100px"></div>
 
     <!--this code will show the first page of the score-->
-    <script>
+    <!--<script>
       //the OSMD standard code, taken from the main wiki
 
       var osmd = new opensheetmusicdisplay.OpenSheetMusicDisplay("sheetMusicContainer");
@@ -54,12 +54,12 @@
               osmd.render(); 
             }
           );
-    </script>
+    </script>-->
     
     <!--the unused Opensheetmusicdisplay code-->    
 
     <!--contains the XML data-->
-    <!--<div id="sheetMusicContainer" style="height: 100px">
+    <div id="sheetMusicContainer" style="height: 100px">
     </div>
     <script>
       
@@ -89,7 +89,8 @@
           backend: "svg",
           //disabled, because the credits are already displayed above
           drawCredits: false,
-          drawingParameters: "compacttight" // don't display title, composer etc., smaller margins
+          drawingParameters: "compacttight", // don't display title, composer etc., smaller margins
+          drawUpToMeasureNumber: 2
         });
         osmd
           .load(XMLString)
@@ -98,7 +99,12 @@
               osmd.render(); 
             }
           );
-      </script>-->
+      </script>
 
 </body>
 </html>
+
+
+<!--see image here: https://github.com/opensheetmusicdisplay/opensheetmusicdisplay/issues/658
+https://github.com/opensheetmusicdisplay/opensheetmusicdisplay/blob/4068565/src/MusicalScore/Graphical/EngravingRules.ts#L443
+MaxPageToDrawNumber here https://opensheetmusicdisplay.github.io/classdoc/classes/EngravingRules.html#MaxPageToDrawNumber-->

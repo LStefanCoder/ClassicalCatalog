@@ -48,6 +48,31 @@ const __dirname = path.dirname(__filename); // get the name of the directory
 
 
 const app = express();
+//creating an UUID, that is, a random number so that the session can be uniquely identified
+import { v4 as uuidv4 } from 'uuid';
+uuidv4();
+//the express-session module enables us to store variables in the same session between different get requests
+const session = require('express-session');
+
+//before I declare all the app.use methods, I first create a session, so that the previous URL can be stored in a session variable
+//see https://stackoverflow.com/questions/57451882/how-to-set-property-to-req-session
+
+
+//we need to set session as a middleware for the entire application, see https://medium.com/@mfahadqureshi786/creating-session-in-nodejs-a72d5544e4d1
+app.use(session(
+  {
+    name:'mainCookie',
+    genid: function(req) {console.log('session created');
+      return uuidv4();
+    },
+    resave: false,
+    secret: 'SomeSecretMessage',
+    saveUninitialized: false,
+    cookie: {secure: false, expires:60000},
+    currentURL: '/'
+  }
+));
+
 app.use(bodyParser.json());
 //serving the site from the static folder, see https://www.youtube.com/watch?v=fyc-4YmgLu0
 app.use(express.static('public'));
@@ -65,6 +90,11 @@ app.set('view engine', 'ejs');
 
 app.get('/', (req, res) => {
     res.status(200);
+    //when the application is on its main page, the variable used for retrieving the previous url for the "back" button is set to the main URL
+    //this variable is stored in session, which means it can be retrieved from different get requests
+    //see https://stackoverflow.com/questions/33120874/node-js-get-previous-url/33122205
+    //req.session.currentURL;
+    //console.log(req.session.currentURL);
 });
 
 const port = 3000;
@@ -83,8 +113,11 @@ app.listen(port, (err) => {
 //async is necessary in order to wait for the response to the database query, see https://stackoverflow.com/questions/48835394/make-async-calls-in-express-server-app-get, https://stackoverflow.com/questions/72577747/how-to-use-app-get-asynchronously-in-express-js, https://stackoverflow.com/questions/63832370/node-js-waiting-for-the-db-query-results-for-the-next-step
 app.get('/results', async (req, res) => {
 
+  //getting the previous URL and setting the session variable to the current URL for later retrieval
+  var previousURL = req.session.currentURL;
+  req.session.currentURL = req.url;
+
   var searchTerm = req.query.searchbar;
-  console.log(searchTerm);
 
   //selecting the correct key and genre for the search
   var key = req.query.key;
@@ -206,7 +239,8 @@ await delay(100);
     result: results,
     length: results.length,
     category: req.category,
-    term: searchTerm
+    term: searchTerm,
+    previousURL: previousURL
   });
 
   //closing the database after the necessary queries have been done
@@ -217,6 +251,11 @@ await delay(100);
 //https://sourcebae.com/blog/how-dynamic-routing-works-in-express-js/
 app.get('/works/:number', async (req, res) => 
 {
+
+  //again, we get the URL of the previous page to send in res.send
+  var previousURL = req.session.currentURL;
+  req.session.currentURL = req.url;
+
   const ID = req.params.number;
   var searchTerm = 'SELECT * FROM MusicPieces WHERE ID = ' + ID;
   //this search term is used to retrieve the "further information" link and sending it to the page about the individual music piece
@@ -246,8 +285,6 @@ app.get('/works/:number', async (req, res) =>
 
   await delay(100);
 
-  console.log(typeof(queryResult.XML));
-
   //using the xmlbuilder2 module to build an XML file from the string, //https://github.com/oozcitak/xmlbuilder2
 
   const xmlStr = queryResult.XML;
@@ -262,13 +299,16 @@ app.get('/works/:number', async (req, res) =>
   //for the .match command, see https://stackoverflow.com/questions/9401897/split-a-string-using-whitespace-in-javascript
   //composerNameArray = queryResult.Composer.match(/\w+/g);
 
-  composerSearchTerm = 'SELECT * FROM Composers WHERE Name = ' + queryResult.Composer;
-  console.loog(composerSearchTerm);
-  console.log(composerSearchTerm);
+  composerSearchTerm = 'SELECT * FROM Composers WHERE Name = "' + queryResult.Composer + '"';
+
+  await delay(200);
 
   await DBcomposer.get(composerSearchTerm, (error, row2) => {
     composerResult = row2;
-    console.log(row2);
+    if (error) {
+      return console.error(error.message);
+  }
+
   });
 
   await delay(200);
@@ -285,12 +325,17 @@ app.get('/works/:number', async (req, res) =>
     MIDIData = verovioToolkit.renderToMIDI();
  });*/
 
-  res.render('piece', {result: queryResult, composer: composerResult, XML: xmlDoc, osmdisplay: OSMDisplay, midiData: MIDIData});
+ console.log(req.session.currentURL);
+
+  res.render('piece', {result: queryResult, composer: composerResult, XML: xmlDoc, osmdisplay: OSMDisplay, midiData: MIDIData, previousURL: previousURL});
+
 });
 
 //the get function for the pdf files of the individual works
 app.get('/works/:number/pdf', async (req, res) => 
   {
+
+    //unlike the other get requests, this serves a pdf file only, so this page cannot have a "back" button
 
 //https://stackoverflow.com/questions/38855299/creating-an-html-or-pdf-file-in-memory-and-streaming-it-in-node-js
 
@@ -329,21 +374,23 @@ app.get('/works/:number/pdf', async (req, res) =>
 //this function opens a page of the individual composer
 app.get('/composers/:number', async (req, res) =>
   {
+    var previousURL = req.session.currentURL;
+    req.session.currentURL = req.url;
 
     const ID = req.params.number;
     var queryResult;
 
-    searchTerm = 'SELECT * FROM Composers WHERE Name = ' + ID;
+    var searchTerm = 'SELECT * FROM Composers WHERE ID = ' + ID;
     
     const DBtempopen = new sql3.Database('composers.db', sql3.OPEN_READONLY);
 
     await DBtempopen.get(searchTerm, (error, row) => {
-      queryResult = row.PDF;
+      queryResult = row;
     });
 
     await delay(200);
 
-    res.render('composer', {result: queryResult});
+    res.render('composer', {result: queryResult, previousURL: previousURL});
 
   });
 
