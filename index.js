@@ -33,6 +33,8 @@ import createVerovioModule from 'verovio/wasm';
 import { VerovioToolkit } from 'verovio/esm';
 //import fs from 'node:fs';
 
+//import {xml} from 'xml';
+
 import OpenSheetMusicDisplay from 'opensheetmusicdisplay';
 const { OSMDisplay } = OpenSheetMusicDisplay;
 
@@ -344,7 +346,7 @@ app.get('/works/:number/pdf', async (req, res) =>
   //first, we need to get the binary of the PDF file from the database
   var searchTerm = 'SELECT * FROM MusicPieces WHERE ID = ' + ID;
   //the binary data from the database search will be appended here
-  var PDFFile;
+  //var PDFFile;
 
   const DBtempopen = new sql3.Database('music.db', sql3.OPEN_READONLY);
 
@@ -370,6 +372,41 @@ app.get('/works/:number/pdf', async (req, res) =>
   res.send(queryResult);
 
   });
+
+app.get('/works/:number/xml', async (req, res) =>
+{
+
+  //https://stackoverflow.com/questions/38855299/creating-an-html-or-pdf-file-in-memory-and-streaming-it-in-node-js
+
+  const ID = req.params.number;
+  var queryResult;
+  //first, we need to get the binary of the PDF file from the database
+  var searchTerm = 'SELECT * FROM MusicPieces WHERE ID = ' + ID;
+
+  const DBtempopen = new sql3.Database('music.db', sql3.OPEN_READONLY);
+
+  //writing the binary data of the pdf file from the database to a variable
+  await DBtempopen.get(searchTerm, (error, row) => {
+    queryResult = row.XML;
+  });
+
+  await delay(200);
+
+  //assigning the binary data to the file variable, https://stackoverflow.com/questions/27159179/how-to-convert-blob-to-file-in-javascript
+  //doesn't work in node.js, only the browser
+  //PDFFile = new File([queryResult], "score.pdf");
+
+  //https://www.geeksforgeeks.org/node-js-response-setheader-method/
+
+  //setting the response header to a pdf filetype
+  //https://github.com/marcbachmann/node-html-pdf/issues/472
+  //res.setHeader('Content-Type', 'text/xml');
+  //res.setHeader('Content-Disposition', 'inline; filename=score.xml');
+
+  //res.send is used instead of res.render, because the data file needs to be sent and not an ejs template rendered
+  res.send(queryResult);
+
+});
 
 //this function opens a page of the individual composer
 app.get('/composers/:number', async (req, res) =>
