@@ -14,11 +14,20 @@
   </head>
   <body>
 
-    <div class="mx-auto">
-        <h1>Search results for <%= term %></h1>
-        <h2> <%= length %> results found!</h2>
+        <!--the sticky navbar-->
+        <nav class="navbar sticky-top navbar-light bg-light">
+          <a class="navbar-brand" href="/">Music database</a>
+          <!--the link-underline-opacity-0 property removes the underline effect from the link-->
+          <a class="navbar-aboutlink link-underline link-underline-opacity-0" href="/about">About</a>
+        </nav>
+
+    <div class="mx-auto" style="align-content: center;">
+        <h1>Search results for "<%= term %>"</h1>
+        <h2 class="centertext"> <%= length %> results found!</h2>
     </div>
     
+    <!--a spacer-->
+    <div style="height: 20px"></div>
 
     
 
@@ -28,7 +37,7 @@
 
         <!--https://codepen.io/nikki-peel/pen/RwavQer-->
         <!--w-50 means 50% of page width, and mx-auto centers the card-->
-        <div class="card w-50 mx-auto">
+        <div class="card w-50 mx-auto border-gradient border-gradient-blue">
             <div class="card-body">
                 <h2 class="card-title"><%= result[i]['Title'] %></h2>
                 <h3 class="card-subtitle mb-2"><%= result[i]['Composer'] %></h3>

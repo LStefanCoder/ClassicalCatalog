@@ -19,6 +19,11 @@ body,
   box-shadow: inset 0 0 0 1px transparent;
 }*/
 
+.main-searchform {
+  margin-top: 2em;
+  padding: 1rem;
+}
+
 /*https://codepen.io/bogdansandu/pen/ogNyGgm, https://www.sliderrevolution.com/resources/bootstrap-search-box/*/
 
 .form-container {

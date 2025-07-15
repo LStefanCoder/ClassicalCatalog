@@ -10,6 +10,14 @@
     <title>Main page</title>
 </head>
 <body>
+    <!--the navbar-->
+
+    <nav class="navbar sticky-top navbar-light bg-light">
+        <a class="navbar-brand" href="/">Music database</a>
+        <!--the link-underline-opacity-0 property removes the underline effect from the link-->
+        <a class="navbar-aboutlink link-underline link-underline-opacity-0" href="/about">About</a>
+      </nav>
+      
     <!--the back arrow redirects to the main page-->
     <a href=""><img src="../svg/left-arrow-circle2-svgrepo-com.svg" alt="" style="height: 50px" class="pdfIcon"></a>
     <h1><%= result['FirstName'] %> <%= result['LastName'] %></h1>

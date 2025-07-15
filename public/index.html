@@ -13,12 +13,21 @@
     <title>Main page</title>
   </head>
   <body>
+
+    <!--the sticky navbar-->
+
+    <nav class="navbar sticky-top navbar-light bg-light">
+      <a class="navbar-brand" href="/">Music database</a>
+      <!--the link-underline-opacity-0 property removes the underline effect from the link-->
+      <a class="navbar-aboutlink link-underline link-underline-opacity-0" href="/about">About</a>
+    </nav>
+
     <script>import $ from 'jquery'; //importing jquery, see https://stackoverflow.com/questions/58320283/how-do-i-use-jquery-in-my-html-after-npm-install</script>
 
     <!--https://bootstrapexamples.com/@anonymous/search-bar-->
     <!--https://codepen.io/bogdansandu/pen/ogNyGgm, https://www.sliderrevolution.com/resources/bootstrap-search-box/-->
 
-      <div class="form-container">
+      <div class="form-container main-searchform">
         <h2 class="mb-4">Music database search</h2>
         <form action="/results">
             <div class="row g-3 mb-4">

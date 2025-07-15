@@ -195,7 +195,7 @@ app.get('/results', async (req, res) => {
         }
     }
 
-    await delay(100);
+    await delay(100); 
   
   //testing a temporary database opening instead of a permanent one in dbconnect.js and export as DB
   //https://www.sqlitetutorial.net/sqlite-nodejs/
@@ -430,6 +430,15 @@ app.get('/composers/:number', async (req, res) =>
     res.render('composer', {result: queryResult, previousURL: previousURL});
 
   });
+
+app.get('/about', async(req, res) =>{
+
+  var previousURL = req.session.currentURL;
+  req.session.currentURL = req.url;
+
+  res.render('about', {previousURL: previousURL});
+
+});
 
 //https://www.google.com/search?q=display+database+search+results+with+ejs&oq=display+database+search+results+with+ejs&gs_lcrp=EgZjaHJvbWUyBggAEEUYOdIBCDg5NTBqMGoxqAIIsAIB&sourceid=chrome&ie=UTF-8
 

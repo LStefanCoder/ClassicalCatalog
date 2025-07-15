@@ -11,9 +11,18 @@
     <script src="../../js/opensheetmusicdisplay.min.js"></script>
     
 
-    <title>Main page</title>
+    <title>Music piece</title>
 </head>
 <body>
+
+    <!--first comes the navbar-->
+
+    <nav class="navbar sticky-top navbar-light bg-light">
+      <a class="navbar-brand" href="/">Music database</a>
+      <!--the link-underline-opacity-0 property removes the underline effect from the link-->
+      <a class="navbar-aboutlink link-underline link-underline-opacity-0" href="/about">About</a>
+    </nav>
+
     <!--the back arrow redirects to the original page-->
     <a href="<%= previousURL %>"><img src="../svg/left-arrow-circle2-svgrepo-com.svg" alt="" style="height: 50px" class="pdfIcon"></a>
     <h1><%= result['Title'] %></h1>
