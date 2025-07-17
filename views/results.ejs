@@ -9,6 +9,8 @@
 
     <!--on this page, OpenSheetMusicDisplay is used to show a preview of the score-->
     <script src="../../js/opensheetmusicdisplay.min.js"></script>
+
+    <!--https://gist.github.com/imolorhe/f8794d3bb55e1a8065b23bcd0efeebe1-->
     
     <title>Search results</title>
   </head>
@@ -45,42 +47,26 @@
                 <!--https://stackoverflow.com/questions/42609853/i-want-to-make-href-tag-dynamic-and-value-will-be-populated-and-i-have-ejs-templ-->
                 <!--icon from https://feathericons.com/, MIT license-->
                 <a href="/works/<%= result[i]['ID'] %>" class="btn card-link"><img src="svg/feather-link-2.svg" alt="" style="height: 20px"></img></a>
-                <div id="sheetMusicContainer"></div>
+                <img src="data:image/jpeg;base64,<%- result[i]['Image'] %>" alt="">
 
-                <script>
-                  var XMLStartString = `<%= result['XML'] %>`;
-                  var XMLUnescapedString = XMLStartString.replace(/&amp;/g, '&')
-                  .replace(/&lt;/g, '<')
-                  .replace(/&gt;/g, '>')
-                  .replace(/&quot;/g, '"')
-                  .replace(/&#34;/g, '"')
-                  .replace(/&#39;/g, "'");;
-      
-                  var XMLString = XMLUnescapedString;
-
-                  var osmd = new opensheetmusicdisplay.OpenSheetMusicDisplay("sheetMusicContainer");
-        osmd.setOptions({
-          //all options see https://github.com/opensheetmusicdisplay/opensheetmusicdisplay/blob/master/src/OpenSheetMusicDisplay/OSMDOptions.ts
-          backend: "svg",
-          //disabled, because the credits are already displayed above
-          drawCredits: false,
-          drawingParameters: "compacttight", // don't display title, composer etc., smaller margins
-          drawUpToMeasureNumber: 1 //this only draws the first measure, this conserves resources
-        });
-        osmd
-          .load(XMLString)
-          .then(
-            function() {
-              osmd.render(); 
-            }
-          );
-                </script>
+              
             </div>
     </div>
      <% } %>
 
         <!--https://www.bootdey.com/snippets/view/General-Search-Results#html-->
     
+
+        <script>
+          //https://stackoverflow.com/questions/70015641/how-can-i-use-pdf-js-to-display-the-first-page-of-every-user-uploaded-pdf-file-a
+          //this script should get the first page of a pdf file and render it to a canvas
+          
+          //https://mozilla.github.io/pdf.js/examples/
+          
+
+
+          
+        </script>
 
   </body>
 </html>

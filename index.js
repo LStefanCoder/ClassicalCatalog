@@ -21,6 +21,17 @@ import {DOMParser, parseHTML} from 'linkedom';
 //the Node file system module, required to write files to disk
 import * as fs from 'node:fs';
 
+//error with the pdfjs-dist library, see https://community.n8n.io/t/solution-workaround-dommatrix-is-not-defined-error-in-extract-from-file-pdf-node-on-n8n-v1-98-0/135568
+//import { getDocument } from "pdfjs-dist/build/pdf.mjs";
+
+//https://github.com/hyzyla/pdfium
+//import { PDFiumLibrary } from "@hyzyla/pdfium";
+//import { promises as fs } from 'fs';
+//library for converting raw bitmap data to JPG images
+//https://www.npmjs.com/package/sharp
+//import * as sharp from 'sharp';
+
+
 //this way of loading seems to be working with "type: module" in the package.json; https://github.com/jsdom/jsdom/issues/2514
 import { JSDOM } from 'jsdom';
 //https://github.com/oozcitak/xmlbuilder2
@@ -201,6 +212,7 @@ app.get('/results', async (req, res) => {
   //https://www.sqlitetutorial.net/sqlite-nodejs/
   const DBtempopen = new sql3.Database('music.db', sql3.OPEN_READONLY);
 
+  //this array stores all the results 
   var results = [];
 
   //https://medium.com/@codesprintpro/getting-started-sqlite3-with-nodejs-8ef387ad31c4
@@ -220,9 +232,19 @@ app.get('/results', async (req, res) => {
       var Instruments = row.Instruments;
       var Link = row.Link;
       var XML = row.XML;
+      var PDF = row.PDF;
+      var image = row.Image;
 
-      var rowDictionary = {'ID': ID, 'Composer': Composer, 'Title': Title, 'SecondTitle': SecondTitle, 'Year': Year, 'Genre': Genre, 'Key': Key, 'Instruments': Instruments, 'Link': Link, 'XML': XML};
+      //this const is needed, since the "Buffer" method has been deprecated in newer versions of Node.js
+      //documentation: https://nodejs.org/api/buffer.html#buftostringencoding-start-end
+      //also https://stackoverflow.com/questions/51692042/how-to-display-a-type-blob-image-to-ejs-web-page
+      const buf1 = Buffer(image);
 
+      var imageBase64 = buf1.toString('base64');
+
+      var rowDictionary = {'ID': ID, 'Composer': Composer, 'Title': Title, 'SecondTitle': SecondTitle, 'Year': Year, 'Genre': Genre, 'Key': Key, 'Instruments': Instruments, 'Link': Link, 'XML': XML, 'PDF': PDF, 'Image': imageBase64};
+
+      
       results.push(rowDictionary);
       //console.log(results.length);
       
@@ -233,6 +255,8 @@ app.get('/results', async (req, res) => {
 });
 
 await delay(100);
+
+//for()
 
   //console.log(results.length);
 
