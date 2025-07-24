@@ -18,24 +18,48 @@
     <!--first comes the navbar-->
 
     <nav class="navbar sticky-top navbar-light bg-light">
-      <a class="navbar-brand" href="/">Music database</a>
+      <h3 class="navbarHeader"><a class="navbarMainlink" href="/">Music database</a></h3>
       <!--the link-underline-opacity-0 property removes the underline effect from the link-->
-      <a class="navbar-aboutlink link-underline link-underline-opacity-0" href="/about">About</a>
+      <a class="navbarAboutlink link-underline link-underline-opacity-0" href="/about">About</a>
     </nav>
 
     <!--the back arrow redirects to the original page-->
     <a href="<%= previousURL %>"><img src="../svg/left-arrow-circle2-svgrepo-com.svg" alt="" style="height: 50px" class="pdfIcon"></a>
     <h1><%= result['Title'] %></h1>
     <h2>Composed by <%= result['Composer'] %></h2>
-    <p><a href="<%= result['Link'] %>">Source: <%= result['Link'] %></a></p>
     <p>Genre: <%= result['Genre'] %></p>
     <p>Key: <%= result['Key'] %></p>
     <p>Instruments: <%= result['Instruments'] %></p>
-    <p>Year: <%= result['Year'] %></p>
+    <p>Year of composition: <%= result['Year'] %></p>
+    <p>Source: <a href="<%= result['Link'] %>" class="aboutlink"><%= result['Link'] %></a></p>
+
     <!--PDF icon from svgrepo.com, CC0 license-->
     <!--the link to the PDF file of the score-->
     <p><a href="/works/<%= result['ID'] %>/pdf""><img src="../svg/pdf-file-format-symbol-svgrepo-com.svg" alt="" style="height: 50px" class="pdfIcon"></a></p>
-    <a href="/works/<%= result['ID'] %>/xml">XML file</a>
+    <div style="height: 1em;"></div>
+    <p><a href="/works/<%= result['ID'] %>/xml"><img src="../svg/svgicon.svg" alt="" style="height: 50px" class="pdfIcon"></a></p>
+    
+    
+    <!--the following two divs contain the links to the individual performances and manuscripts-->
+    <div>
+      <h3>Manuscripts</h3>
+
+      <p><%= result['ManuscriptText1'] %> <a href="<%= result['ManuscriptLink1'] %>">(link)</a></p>
+      <% if(result['ManuscriptLink2']) { %>
+        <p><%= result['ManuscriptText2'] %> <a href="<%= result['ManuscriptLink2'] %>">(link)</a></p> 
+      <% } %>
+    </div>
+
+    <div>
+      <h3>Performances</h3>
+
+      <p><%= result['PerformanceText1'] %> <a href="<%= result['PerformanceLink1'] %>">Link</a></p> 
+        <% if(result['PerformanceLink2']) { %>
+      <p><%= result['PerformanceText2'] %> <a href="<%= result['PerformanceLink2'] %>">Link</a></p> 
+      <% } %>
+    </div>
+    
+    <p></p>
 
     <!--this page leads the user to further information about the composer-->
     <p><a href="/composers/<%= composer['ID'] %>">Information about the composer</a></p>
@@ -102,6 +126,8 @@
           drawingParameters: "compacttight", // don't display title, composer etc., smaller margins
           drawUpToMeasureNumber: 2
         });
+        //reducing the size of the score that it doesn't overwhelme the entire page
+        osmd.zoom = 0.01;
         osmd
           .load(XMLString)
           .then(
