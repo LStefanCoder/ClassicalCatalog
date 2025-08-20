@@ -1,9 +1,22 @@
 body {
-    margin: 20px;
+  margin: 10px;
+}
+
+.mainBody {
+    margin: 50px;
 }
 
 a {
     text-decoration: none;
+}
+
+p {
+  font-size: medium;
+}
+
+/*the div separating the individual elements*/
+.separator {
+  height: 2em;
 }
 
 .navbarMaintext {

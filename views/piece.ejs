@@ -7,13 +7,39 @@
     <link href="../css/piece.css" rel="stylesheet" >
     <script src="../js/bootstrap.min.js"></script>
     
+    <!--including the midi player script-->
+    <script src="https://www.midijs.net/lib/midi.js"></script>
     
     <script src="../../js/opensheetmusicdisplay.min.js"></script>
-    
 
+    <!--for the midi player, see https://github.com/cifkao/html-midi-player-->
+    <script src="https://cdn.jsdelivr.net/combine/npm/tone@14.7.58,npm/@magenta/music@1.23.1/es6/core.js,npm/html-midi-player@1.5.0"></script>
+    
     <title>Music piece</title>
 </head>
 <body>
+
+  <!-- the MIDI playback script -->
+  <script>
+
+    //based on https://book.verovio.org/interactive-notation/playing-midi.html, converting the Midi string passed by the function in index.js into a format that Midi.js is able to play
+    
+
+    //these two functions will be attached to the two buttons
+    function MidiStart()
+    {
+      MIDIjs.play(`<%= result['midiData'] %>`);
+      console.log("a");
+    }
+
+    function MidiStop()
+    {
+      MIDIjs.stop();
+    }
+
+
+
+  </script>
 
     <!--first comes the navbar-->
 
@@ -25,20 +51,37 @@
 
     <!--the back arrow redirects to the original page-->
     <a href="<%= previousURL %>"><img src="../svg/left-arrow-circle2-svgrepo-com.svg" alt="" style="height: 50px" class="pdfIcon"></a>
+
+  <div class="mainBody">
+
     <h1><%= result['Title'] %></h1>
+    <% if(result['NoofParts'] != 1) { %>
+      <h2>Part <%= result['Part'] %> of <%= result['NoofParts'] %></h2>
+    <% } %>
     <h2>Composed by <%= result['Composer'] %></h2>
+
+    <div class="separator"></div>
+    
+    <h3>Details</h3>
     <p>Genre: <%= result['Genre'] %></p>
     <p>Key: <%= result['Key'] %></p>
     <p>Instruments: <%= result['Instruments'] %></p>
     <p>Year of composition: <%= result['Year'] %></p>
     <p>Source: <a href="<%= result['Link'] %>" class="aboutlink"><%= result['Link'] %></a></p>
 
+    <!--this page leads the user to further information about the composer-->
+    <p><a href="/composers/<%= composer['ID'] %>">Information about the composer</a></p>
+
+    <div class="separator"></div>
+
     <!--PDF icon from svgrepo.com, CC0 license-->
     <!--the link to the PDF file of the score-->
+    <h3>The score</h3>
     <p><a href="/works/<%= result['ID'] %>/pdf""><img src="../svg/pdf-file-format-symbol-svgrepo-com.svg" alt="" style="height: 50px" class="pdfIcon"></a></p>
     <div style="height: 1em;"></div>
     <p><a href="/works/<%= result['ID'] %>/xml"><img src="../svg/svgicon.svg" alt="" style="height: 50px" class="pdfIcon"></a></p>
     
+    <div class="separator"></div>
     
     <!--the following two divs contain the links to the individual performances and manuscripts-->
     <div>
@@ -50,20 +93,35 @@
       <% } %>
     </div>
 
+    <div class="separator"></div>
+
     <div>
       <h3>Performances</h3>
 
-      <p><%= result['PerformanceText1'] %> <a href="<%= result['PerformanceLink1'] %>">Link</a></p> 
+      <p><%= result['PerformanceText1'] %> <a href="<%= result['PerformanceLink1'] %>">(link)</a></p> 
         <% if(result['PerformanceLink2']) { %>
-      <p><%= result['PerformanceText2'] %> <a href="<%= result['PerformanceLink2'] %>">Link</a></p> 
+      <p><%= result['PerformanceText2'] %> <a href="<%= result['PerformanceLink2'] %>">(link)</a></p> 
       <% } %>
     </div>
-    
-    <p></p>
 
-    <!--this page leads the user to further information about the composer-->
-    <p><a href="/composers/<%= composer['ID'] %>">Information about the composer</a></p>
+    <div class="separator"></div>
 
+    <button id="playMidiButton" onclick="MidiStart()">Play</button>
+    <button id="pauseMidiButton" onclick="MidiStop()">Pause</button>
+
+    <!--<midi-player
+      id="midiPlayer"
+      sound-font visualizer="#myVisualizer">
+      src="<%= result['midiData'] %>"
+    </midi-player>
+    <midi-visualizer type="piano-roll" id="myVisualizer"></midi-visualizer>-->
+
+
+    <div class="separator"></div>
+  
+
+    <h3>Preview</h3>
+    <p>The first two measures</p>
 
     <!--this div contains the score as rendered by OSMD-->
     <!--the height of the score can be adjusted here-->
@@ -136,6 +194,8 @@
             }
           );
       </script>
+
+  </div>
 
 </body>
 </html>

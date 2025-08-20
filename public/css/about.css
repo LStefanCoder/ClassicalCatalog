@@ -1,0 +1,37 @@
+body {
+  margin: 10px;
+}
+
+.mainBody {
+    margin: 20px;
+}
+
+a {
+    text-decoration: none;
+}
+
+p {
+  font-size: medium;
+}
+
+.navbar {
+    /*setting the navbar to a warm white color*/
+    background-color: #fffff5;
+  }
+  
+  .navbarMaintext {
+  
+  }
+  
+  .navbarAboutlink {
+    box-shadow: inset 0 0 0 0 #0049e6;
+    color: #0049e6;
+      padding: 0 .25rem;
+      margin: 0 -.25rem;
+    transition: color .3s ease-in-out, box-shadow .3s ease-in-out;
+  } 
+  
+  .navbarAboutlink:hover {
+    color: #fff;
+    box-shadow: inset 200px 0 0 0 #0049e6;;
+  }

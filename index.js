@@ -21,6 +21,8 @@ import {DOMParser, parseHTML} from 'linkedom';
 //the Node file system module, required to write files to disk
 import * as fs from 'node:fs';
 
+import wikidataLookup from 'wikidata-entity-lookup';
+
 //error with the pdfjs-dist library, see https://community.n8n.io/t/solution-workaround-dommatrix-is-not-defined-error-in-extract-from-file-pdf-node-on-n8n-v1-98-0/135568
 //import { getDocument } from "pdfjs-dist/build/pdf.mjs";
 
@@ -136,7 +138,8 @@ app.get('/results', async (req, res) => {
   var key = req.query.key;
   var genre = req.query.genre;
   var instruments = req.query.instruments;
-  var year = req.query.year;
+  var composer = req.query.composer;
+  //var year = req.query.year;
 
   var query;
 
@@ -226,6 +229,8 @@ app.get('/results', async (req, res) => {
       var Composer = row.Composer;
       var Title = row.Title;
       var SecondTitle = row.SecondTitle;
+      var Part = row.Part;
+      var NoofParts = row.NoofParts;
       var Year = row.Year;
       var Genre = row.Genre;
       var Key = row.Key;
@@ -242,8 +247,7 @@ app.get('/results', async (req, res) => {
 
       var imageBase64 = buf1.toString('base64');
 
-      var rowDictionary = {'ID': ID, 'Composer': Composer, 'Title': Title, 'SecondTitle': SecondTitle, 'Year': Year, 'Genre': Genre, 'Key': Key, 'Instruments': Instruments, 'Link': Link, 'XML': XML, 'PDF': PDF, 'Image': imageBase64};
-
+      var rowDictionary = {'ID': ID, 'Composer': Composer, 'Title': Title, 'SecondTitle': SecondTitle, 'Part': Part, 'NoofParts': NoofParts, 'Year': Year, 'Genre': Genre, 'Key': Key, 'Instruments': Instruments, 'Link': Link, 'XML': XML, 'PDF': PDF, 'Image': imageBase64};
       
       results.push(rowDictionary);
       //console.log(results.length);
@@ -341,19 +345,27 @@ app.get('/works/:number', async (req, res) =>
 
   DBcomposer.close();
 
+  let MIDIString;
+
   //opening Verovio and converting the MusicXML to MEI and that to MIDI
-  /*createVerovioModule().then(VerovioModule => {
+  createVerovioModule().then(VerovioModule => {
     const verovioToolkit = new VerovioToolkit(VerovioModule);
-    const score = xmlDoc;
+    //the plain string is needed, not the converted string intended for the preview with OSMD
+    const score = xmlStr;
+    //console.log(score);
     verovioToolkit.loadData(score);
     //rendering the score to MIDI data, which is then sent to the browser
     //https://book.verovio.org/verovio-reference-book.pdf, p. 29
+    //also https://www.npmjs.com/package/verovio
     MIDIData = verovioToolkit.renderToMIDI();
- });*/
+    MIDIString = 'data:audio/midi;base64,' + MIDIData;
+ });
+
+ await delay(200);
 
  console.log(req.session.currentURL);
 
-  res.render('piece', {result: queryResult, composer: composerResult, XML: xmlDoc, osmdisplay: OSMDisplay, midiData: MIDIData, previousURL: previousURL});
+  res.render('piece', {result: queryResult, composer: composerResult, XML: xmlDoc, osmdisplay: OSMDisplay, midiData: MIDIString, previousURL: previousURL});
 
 });
 
@@ -401,7 +413,6 @@ app.get('/works/:number/xml', async (req, res) =>
 {
 
   //https://stackoverflow.com/questions/38855299/creating-an-html-or-pdf-file-in-memory-and-streaming-it-in-node-js
-
   const ID = req.params.number;
   var queryResult;
   //first, we need to get the binary of the PDF file from the database
@@ -450,6 +461,16 @@ app.get('/composers/:number', async (req, res) =>
     });
 
     await delay(200);
+
+    //getting the biographical information from Wikidata
+    let wikiDataResults = wikidataLookup.findPerson(queryResult.Name);
+
+    await delay(500);
+
+    console.log(wikiDataResults);
+
+    await delay(200);
+
 
     res.render('composer', {result: queryResult, previousURL: previousURL});
 

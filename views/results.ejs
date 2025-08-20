@@ -35,26 +35,61 @@
 
     <!--based on https://www.digitalocean.com/community/tutorials/how-to-use-ejs-to-template-your-node-application-->
     
-      <% for(var i=0; i<result.length; i++) {%>
+    <!--the Math.floor ensures that the result is always an integer-->
+      <% for(var i=0; i<(Math.ceil(result.length/2)); i++) {%>
 
         <!--https://codepen.io/nikki-peel/pen/RwavQer-->
         <!--w-50 means 50% of page width, and mx-auto centers the card-->
         <div class="row">
+          <!--i*2, i*2+1-->
+          <% if(result[i*2]) { %>
           <div class="col-lg">
-            <div class="card w-50 mx-auto border-gradient border-gradient-blue rounded-2">
-              <div class="row card-body">
-                <div class="col-lg">
-                  <h2 class="card-title"><%= result[i]['Title'] %></h2>
-                  <h3 class="card-subtitle mb-2"><%= result[i]['Composer'] %></h3>
-                  <p class="card-text"><%= result[i]['Genre'] %></p>
+            <div class="card w-75 mx-auto border-gradient border-gradient-blue rounded-2">
+              <div class="row card-body mh-50">
+                <div class="col-8">
+                  <h2 class="card-title"><%= result[i*2]['Title'] %></h2>
+                  <h3 class="card-subtitle mb-2"><%= result[i*2]['Composer'] %></h3>
+                  <% if(result[i*2]['NoofParts'] != 1){ %>
+                    <h3 class="card-subtitle mb-2">Part <%= result[i*2]['Part'] %> of <%= result[i*2]['NoofParts'] %></h3>
+                  <% } %>
                   <!--https://stackoverflow.com/questions/42609853/i-want-to-make-href-tag-dynamic-and-value-will-be-populated-and-i-have-ejs-templ-->
                   <!--icon from https://feathericons.com/, MIT license-->
-                  <a href="/works/<%= result[i]['ID'] %>" class="btn card-link"><img src="svg/feather-link-2.svg" alt="" style="height: 20px"></img></a>
+                  <a href="/works/<%= result[i]['ID'] %>" class="btn card-link">Score</a>
+                  <!--<img src="svg/feather-link-2.svg" alt="" style="height: 20px"></img>-->
                 </div>
-                <img class="col-sm-4" src="data:image/jpeg;base64,<%- result[i]['Image'] %>" alt="">
+                <div class="col-md">
+                  <img class="col-8 cardImage img-thumbnail float-end mw-50" src="data:image/jpeg;base64,<%- result[i]['Image'] %>" alt="">
+                </div>
               </div>
             </div>
           </div>
+          <% } %>
+          <% if(result[i*2 + 1]) { %>
+          <div class="col-lg">
+            <div class="card w-75 mx-auto border-gradient border-gradient-blue rounded-2">
+              <div class="row card-body mh-50">
+                <div class="col-8">
+                  <h2 class="card-title"><%= result[i*2 + 1]['Title'] %></h2>
+                  <h3 class="card-subtitle mb-2"><%= result[i*2 + 1]['Composer'] %></h3>
+                  <% if(result[i*2 + 1]['NoofParts'] != 1){ %>
+                    <h3 class="card-subtitle mb-2">Part <%= result[i*2 + 1]['Part'] %> of <%= result[i*2 + 1]['NoofParts'] %></h3>
+                  <% } %>
+                  <!--https://stackoverflow.com/questions/42609853/i-want-to-make-href-tag-dynamic-and-value-will-be-populated-and-i-have-ejs-templ-->
+                  <!--icon from https://feathericons.com/, MIT license-->
+                  <a href="/works/<%= result[i]['ID'] %>" class="btn card-link">Score</a>
+                  <!--<img src="svg/feather-link-2.svg" alt="" style="height: 20px"></img>-->
+                </div>
+                <div class="col-md">
+                  <img class="col-8 cardImage img-thumbnail float-end mw-50" src="data:image/jpeg;base64,<%- result[i]['Image'] %>" alt="">
+                </div>
+              </div>
+            </div>
+          </div>
+          <% } else { %>
+            <div class="col-lg">
+
+            </div>
+          <% } %>
         </div>
         <!--<div class="card w-50 mx-auto border-gradient border-gradient-blue">
             <div class="card-body">
