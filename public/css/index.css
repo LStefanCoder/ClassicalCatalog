@@ -12,7 +12,7 @@ p {
 
 .navbar {
   /*setting the navbar to a warm white color*/
-  background-color: #fffff5;
+  background-color: #001a49;
 }
 
 .navbarHeader {
@@ -33,7 +33,7 @@ p {
 
 .navbarAboutlink:hover {
   color: #fff;
-  box-shadow: inset 200px 0 0 0 #0049e6;;
+  box-shadow: inset 200px 0 0 0 #0049e6;
 }
 
 .main-searchform {

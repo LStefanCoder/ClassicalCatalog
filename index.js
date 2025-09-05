@@ -12,7 +12,10 @@ import opensheetmusicdisplay from 'opensheetmusicdisplay';
 import sqlite3 from 'sqlite3';
 const sql3 = sqlite3.verbose();
 //this package wraps around the sqlite3 package, and can accept awaits, see https://www.npmjs.com/package/sqlite, https://stackoverflow.com/questions/64372255/how-to-use-async-await-in-sqlite3-db-get-and-db-all
-//import { open } from 'sqlite';
+//https://www.npmjs.com/package/sqlite
+import { open } from 'sqlite';
+
+
 
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -21,7 +24,18 @@ import {DOMParser, parseHTML} from 'linkedom';
 //the Node file system module, required to write files to disk
 import * as fs from 'node:fs';
 
-import wikidataLookup from 'wikidata-entity-lookup';
+import * as util from 'util';
+
+//setting up the necessary code to query Wikidata, displaying the results on the composer pages
+//https://www.npmjs.com/package/wikibase-sdk#wikibase-api
+import { WBK } from 'wikibase-sdk'
+//https://github.com/maxlath/wikibase-sdk/blob/main/docs/simplify_claims.md#simplifyclaims
+import { simplifyClaims } from 'wikibase-sdk'
+
+const wbk = WBK({
+  instance: 'https://www.wikidata.org',
+  sparqlEndpoint: 'https://query.wikidata.org/sparql'
+})
 
 //error with the pdfjs-dist library, see https://community.n8n.io/t/solution-workaround-dommatrix-is-not-defined-error-in-extract-from-file-pdf-node-on-n8n-v1-98-0/135568
 //import { getDocument } from "pdfjs-dist/build/pdf.mjs";
@@ -51,9 +65,11 @@ import { VerovioToolkit } from 'verovio/esm';
 import OpenSheetMusicDisplay from 'opensheetmusicdisplay';
 const { OSMDisplay } = OpenSheetMusicDisplay;
 
-//making it possible to make the require path command, https://stackoverflow.com/questions/69099763/referenceerror-require-is-not-defined-in-es-module-scope-you-can-use-import-in 
+//making it possible to make the require path command, https://stackoverflow.com/questions/69099763/referenceerror-require-is-not-defined-in-es-module-scope-you-can-use-import-in , https://nodejs.org/api/module.html#modulecreaterequirefilename, https://stackoverflow.com/questions/59443525/require-not-working-in-module-type-nodejs-script
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
+
+//const Prom = require('sqlite3-promisify');
 
 //const path = require('path');
 
@@ -77,7 +93,7 @@ const session = require('express-session');
 app.use(session(
   {
     name:'mainCookie',
-    genid: function(req) {console.log('session created');
+    genid: function(req) {//console.log('session created');
       return uuidv4();
     },
     resave: false,
@@ -129,8 +145,11 @@ app.listen(port, (err) => {
 app.get('/results', async (req, res) => {
 
   //getting the previous URL and setting the session variable to the current URL for later retrieval
-  var previousURL = req.session.currentURL;
-  req.session.currentURL = req.url;
+  if(req.session.currentURL != req.url)
+    {
+      var previousURL = req.session.currentURL;
+      req.session.currentURL = req.url;
+    }
 
   var searchTerm = req.query.searchbar;
 
@@ -149,12 +168,29 @@ app.get('/results', async (req, res) => {
         {
           if(req.query.instruments == "allInstruments")
             {
-              //the query with the LIKE parameter and the two percentage signs searches where that term is included either at the start or at the end or in the middle of the field
-              query = " SELECT * FROM MusicPieces WHERE Title LIKE '%" + searchTerm + "%' OR Composer LIKE '%" + searchTerm + "%'";
+              if(req.query.composer == "allComposers")
+                {
+                  //the query with the LIKE parameter and the two percentage signs searches where that term is included either at the start or at the end or in the middle of the field
+                  query = " SELECT * FROM MusicPieces WHERE Title LIKE '%" + searchTerm + "%' OR Composer LIKE '%" + searchTerm + "%'";
+                }
+
+              else
+                {
+                  query = " SELECT * FROM MusicPieces WHERE Title LIKE '%" + searchTerm + "%' OR Composer LIKE '%" + searchTerm + "%' AND Composer = '" + composer + "'";
+                }
+              
             }
           else
             {
-              query = " SELECT * FROM MusicPieces WHERE (Title LIKE '%" + searchTerm + "%' OR Composer LIKE '%" + searchTerm + "%') AND Instruments = '" + instruments + "'";
+              if(req.query.composer == "allComposers")
+                {
+                  query = " SELECT * FROM MusicPieces WHERE (Title LIKE '%" + searchTerm + "%' OR Composer LIKE '%" + searchTerm + "%') AND Instruments = '" + instruments + "'";
+                }
+              
+              else 
+              {
+                  query = " SELECT * FROM MusicPieces WHERE (Title LIKE '%" + searchTerm + "%' OR Composer LIKE '%" + searchTerm + "%') AND Instruments = '" + instruments + "AND Composer = '" + composer + "'";
+              }
             } 
         }
 
@@ -162,11 +198,27 @@ app.get('/results', async (req, res) => {
         {
           if(req.query.instruments == "allInstruments")
             {
-              query = " SELECT * FROM MusicPieces WHERE (Title LIKE '%" + searchTerm + "%' OR Composer LIKE '%" + searchTerm + "%') AND Genre = '" + genre + "'";
+              if(req.query.composer == "allComposers")
+                {
+                  query = " SELECT * FROM MusicPieces WHERE (Title LIKE '%" + searchTerm + "%' OR Composer LIKE '%" + searchTerm + "%') AND Genre = '" + genre + "'";
+                }
+              else
+              {
+                  query = " SELECT * FROM MusicPieces WHERE (Title LIKE '%" + searchTerm + "%' OR Composer LIKE '%" + searchTerm + "%') AND Composer = '" + composer + "'AND Genre = '" + genre + "'";
+              }
+              
             }
           else
             {
-              query = " SELECT * FROM MusicPieces WHERE (Title LIKE '%" + searchTerm + "%' OR Composer LIKE '%" + searchTerm + "%') AND Genre = '" + genre + "' AND Instruments = '" + instruments + "'";
+              if(req.query.composer == "allComposers")
+                {
+                  query = " SELECT * FROM MusicPieces WHERE (Title LIKE '%" + searchTerm + "%' OR Composer LIKE '%" + searchTerm + "%') AND Composer = '" + composer + "AND Genre = '" + genre + "' AND Instruments = '" + instruments + "'";
+                }
+              else
+              {
+                query = " SELECT * FROM MusicPieces WHERE (Title LIKE '%" + searchTerm + "%' OR Composer LIKE '%" + searchTerm + "%') AND Genre = '" + genre + "' AND Instruments = '" + instruments + "'";
+              }
+              
             }
           
         }
@@ -208,18 +260,65 @@ app.get('/results', async (req, res) => {
           
         }
     }
-
-    await delay(100); 
   
   //testing a temporary database opening instead of a permanent one in dbconnect.js and export as DB
   //https://www.sqlitetutorial.net/sqlite-nodejs/
-  const DBtempopen = new sql3.Database('music.db', sql3.OPEN_READONLY);
+  //const DBtempopen = new sql3.Database('music.db', sql3.OPEN_READONLY);
+
+  sqlite3.verbose();
+
+  const DBtempopen = await open({filename: 'music.db', driver: sqlite3.Database})
+
+  
+  //making the database query return a promise, since
+  //DBtempopen.allP = util.promisify(DBtempopen.all);
 
   //this array stores all the results 
-  var results = [];
+  var rows = [];
+
+  const results = await DBtempopen.all(query);
+
+  //console.log(results);
+  //console.log(results.length);
+
+  results.forEach(row => {
+    var ID = row.ID;
+      var Composer = row.Composer;
+      var Title = row.Title;
+      var SecondTitle = row.SecondTitle;
+      var Part = row.Part;
+      var NoofParts = row.NoofParts;
+      var Year = row.Year;
+      var Genre = row.Genre;
+      var Key = row.Key;
+      var Instruments = row.Instruments;
+      var Link = row.Link;
+      var XML = row.XML;
+      var PDF = row.PDF;
+      var image = row.Image;
+
+      //this const is needed, since the "Buffer" method has been deprecated in newer versions of Node.js
+      //documentation: https://nodejs.org/api/buffer.html#buftostringencoding-start-end
+      //also https://stackoverflow.com/questions/51692042/how-to-display-a-type-blob-image-to-ejs-web-page
+
+      //https://towardsdev.com/handling-image-base64-data-on-server-side-in-nodejs-8bb43982ad38
+      const data = image.toString('utf8');
+      const base64Data = data.replace('/^data:image\/jpeg;base64,/', "");
+      const imageBuffer = Buffer.from(base64Data, 'base64');
+
+      var rowDictionary = {'ID': ID, 'Composer': Composer, 'Title': Title, 'SecondTitle': SecondTitle, 'Part': Part, 'NoofParts': NoofParts, 'Year': Year, 'Genre': Genre, 'Key': Key, 'Instruments': Instruments, 'Link': Link, 'XML': XML, 'PDF': PDF, 'Image': imageBuffer};
+      
+      rows.push(rowDictionary);
+  });
+
+  await delay(100);
+
+  //console.log(rows);
+
+  //var results = [];
 
   //https://medium.com/@codesprintpro/getting-started-sqlite3-with-nodejs-8ef387ad31c4
-  await DBtempopen.all(query, (error, rows) => {
+  /*await DBtempopen.all(query, (error, rows) => {
     rows.forEach((row) => {
       //pushing all values to a new array of dictionaries
 
@@ -250,31 +349,33 @@ app.get('/results', async (req, res) => {
       var rowDictionary = {'ID': ID, 'Composer': Composer, 'Title': Title, 'SecondTitle': SecondTitle, 'Part': Part, 'NoofParts': NoofParts, 'Year': Year, 'Genre': Genre, 'Key': Key, 'Instruments': Instruments, 'Link': Link, 'XML': XML, 'PDF': PDF, 'Image': imageBase64};
       
       results.push(rowDictionary);
+      console.log(image.length);
+      console.log(imageBase64.length);
       //console.log(results.length);
+
+      //https://stackoverflow.com/questions/53707410/async-await-not-working-with-callback-node-without-promise?rq=3
+      //https://stackoverflow.com/questions/67464286/how-to-make-an-async-function-wait-for-database-queries-to-finish-before-resolvi
       
-    })
+    });
 
     //storing the current URL in a variable, https://stackoverflow.com/questions/33120874/node-js-get-previous-url
-    //req.session.currentUrl = ;
+});*/
+
+//closing the database after the necessary queries have been done
+  await DBtempopen.close();
+
+  await delay(100);
+
+  res.render('results', {
+  result: results,
+  length: results.length,
+  category: req.category,
+  term: searchTerm,
+  previousURL: previousURL
 });
 
-await delay(100);
+//await delay(100);
 
-//for()
-
-  //console.log(results.length);
-
-  //var result = req.result;
-  res.render('results', {
-    result: results,
-    length: results.length,
-    category: req.category,
-    term: searchTerm,
-    previousURL: previousURL
-  });
-
-  //closing the database after the necessary queries have been done
-  DBtempopen.close();
 }); 
 
 //https://stackoverflow.com/questions/13747740/serving-dynamic-urls-with-express-and-mongodb, https://stackoverflow.com/questions/62607356/how-to-create-parameters-in-express-router-dynamically
@@ -283,18 +384,21 @@ app.get('/works/:number', async (req, res) =>
 {
 
   //again, we get the URL of the previous page to send in res.send
-  var previousURL = req.session.currentURL;
-  req.session.currentURL = req.url;
+  if(req.session.currentURL != req.url)
+    {
+      var previousURL = req.session.currentURL;
+      req.session.currentURL = req.url;
+    }
 
   const ID = req.params.number;
   var searchTerm = 'SELECT * FROM MusicPieces WHERE ID = ' + ID;
   //this search term is used to retrieve the "further information" link and sending it to the page about the individual music piece
   var composerSearchTerm;
-  //this variable is for storing an array of the individual parts of the full name of the composer
-  //var composerNameArray;
-  //var searchTerm = 'SELECT * FROM MusicPieces WHERE ID = ?';
-  const DBtempopen = new sql3.Database('music.db', sql3.OPEN_READONLY);
-  const DBcomposer = new sql3.Database('composers.db', sql3.OPEN_READONLY);
+
+  sqlite3.verbose();
+
+  const DBtempopen = await open({filename: 'music.db', driver: sqlite3.Database});
+  const DBcomposer = await open({filename: 'composers.db', driver: sqlite3.Database});
   
   var queryResult;
   var composerResult;
@@ -305,45 +409,23 @@ app.get('/works/:number', async (req, res) =>
 
   var MIDIData;
 
-  //queryResult = await DBtempopen.get(searchTerm, ID);
-
-  await DBtempopen.get(searchTerm, (error, row) => {
-
-    queryResult = row;
-    //console.log(row);
-  });
-
-  await delay(100);
+  queryResult = await DBtempopen.get(searchTerm);
 
   //using the xmlbuilder2 module to build an XML file from the string, //https://github.com/oozcitak/xmlbuilder2
 
   const xmlStr = queryResult.XML;
   const xmlDoc = xmlbuilder2.create(xmlStr);
 
-  await delay(200);
+  //await delay(200);
 
   //closing the database after the query has been finished
-  DBtempopen.close();
-
-  //separating the individual words in the name of the composer
-  //for the .match command, see https://stackoverflow.com/questions/9401897/split-a-string-using-whitespace-in-javascript
-  //composerNameArray = queryResult.Composer.match(/\w+/g);
+  await DBtempopen.close();
 
   composerSearchTerm = 'SELECT * FROM Composers WHERE Name = "' + queryResult.Composer + '"';
 
-  await delay(200);
+  composerResult = await DBcomposer.get(composerSearchTerm);
 
-  await DBcomposer.get(composerSearchTerm, (error, row2) => {
-    composerResult = row2;
-    if (error) {
-      return console.error(error.message);
-  }
-
-  });
-
-  await delay(200);
-
-  DBcomposer.close();
+  await DBcomposer.close();
 
   let MIDIString;
 
@@ -359,13 +441,12 @@ app.get('/works/:number', async (req, res) =>
     //also https://www.npmjs.com/package/verovio
     MIDIData = verovioToolkit.renderToMIDI();
     MIDIString = 'data:audio/midi;base64,' + MIDIData;
+    console.log(MIDIString.length);
  });
-
- await delay(200);
 
  console.log(req.session.currentURL);
 
-  res.render('piece', {result: queryResult, composer: composerResult, XML: xmlDoc, osmdisplay: OSMDisplay, midiData: MIDIString, previousURL: previousURL});
+  res.render('piece', {result: queryResult, composer: composerResult, XML: xmlDoc, osmdisplay: OSMDisplay, midiData:MIDIString, previousURL: previousURL});
 
 });
 
@@ -373,32 +454,21 @@ app.get('/works/:number', async (req, res) =>
 app.get('/works/:number/pdf', async (req, res) => 
   {
 
-    //unlike the other get requests, this serves a pdf file only, so this page cannot have a "back" button
-
 //https://stackoverflow.com/questions/38855299/creating-an-html-or-pdf-file-in-memory-and-streaming-it-in-node-js
 
   const ID = req.params.number;
   var queryResult;
   //first, we need to get the binary of the PDF file from the database
   var searchTerm = 'SELECT * FROM MusicPieces WHERE ID = ' + ID;
-  //the binary data from the database search will be appended here
-  //var PDFFile;
 
-  const DBtempopen = new sql3.Database('music.db', sql3.OPEN_READONLY);
+  const DBtempopen = await open({filename: 'music.db', driver: sqlite3.Database});
+
+  const result = await DBtempopen.get(searchTerm);
 
   //writing the binary data of the pdf file from the database to a variable
-  await DBtempopen.get(searchTerm, (error, row) => {
-    queryResult = row.PDF;
-  });
-
-  await delay(200);
-
-  //assigning the binary data to the file variable, https://stackoverflow.com/questions/27159179/how-to-convert-blob-to-file-in-javascript
-  //doesn't work in node.js, only the browser
-  //PDFFile = new File([queryResult], "score.pdf");
+  queryResult = result.PDF;
 
   //https://www.geeksforgeeks.org/node-js-response-setheader-method/
-
   //setting the response header to a pdf filetype
   //https://github.com/marcbachmann/node-html-pdf/issues/472
   res.setHeader('Content-Type', 'application/pdf');
@@ -418,61 +488,115 @@ app.get('/works/:number/xml', async (req, res) =>
   //first, we need to get the binary of the PDF file from the database
   var searchTerm = 'SELECT * FROM MusicPieces WHERE ID = ' + ID;
 
-  const DBtempopen = new sql3.Database('music.db', sql3.OPEN_READONLY);
+  const DBtempopen = await open({filename: 'music.db', driver: sqlite3.Database});
 
-  //writing the binary data of the pdf file from the database to a variable
-  await DBtempopen.get(searchTerm, (error, row) => {
-    queryResult = row.XML;
-  });
+  const result = await DBtempopen.get(searchTerm);
 
-  await delay(200);
-
-  //assigning the binary data to the file variable, https://stackoverflow.com/questions/27159179/how-to-convert-blob-to-file-in-javascript
-  //doesn't work in node.js, only the browser
-  //PDFFile = new File([queryResult], "score.pdf");
-
-  //https://www.geeksforgeeks.org/node-js-response-setheader-method/
-
-  //setting the response header to a pdf filetype
-  //https://github.com/marcbachmann/node-html-pdf/issues/472
-  //res.setHeader('Content-Type', 'text/xml');
-  //res.setHeader('Content-Disposition', 'inline; filename=score.xml');
+  //writing the binary data of the XML file from the database to a variable
+  queryResult = result.XML;
 
   //res.send is used instead of res.render, because the data file needs to be sent and not an ejs template rendered
   res.send(queryResult);
 
 });
 
+app.get('/works/:number/midi', async (req, res) => 
+{
+  const ID = req.params.number;
+  var queryResult;
+  //first, we need to get the binary of the PDF file from the database
+  var searchTerm = 'SELECT * FROM MusicPieces WHERE ID = ' + ID;
+
+  const DBtempopen = await open({filename: 'music.db', driver: sqlite3.Database});
+
+  const result = await DBtempopen.get(searchTerm);
+
+  //writing the binary data of the XML file from the database to a variable
+  queryResult = result.XML;
+
+  let MIDIString;
+
+  //opening Verovio and converting the MusicXML to MEI and that to MIDI
+  createVerovioModule().then(VerovioModule => {
+    const verovioToolkit = new VerovioToolkit(VerovioModule);
+    //the plain string is needed, not the converted string intended for the preview with OSMD
+    const score = queryResult;
+    //console.log(score);
+    verovioToolkit.loadData(score);
+    //rendering the score to MIDI data, which is then sent to the browser
+    //https://book.verovio.org/verovio-reference-book.pdf, p. 29
+    //also https://www.npmjs.com/package/verovio
+    var MIDIData = verovioToolkit.renderToMIDI();
+    MIDIString = 'data:audio/midi;base64,' + MIDIData;
+    console.log(MIDIString.length);
+
+    res.setHeader('Content-Type', 'application/midi');
+    res.setHeader('Content-Disposition', 'inline; filename=score.midi');
+
+    res.send(MIDIData);
+ });
+
+ /*
+  res.setHeader('Content-Type', 'application/midi');
+  res.setHeader('Content-Disposition', 'inline; filename=score.midi');
+
+  console.log(MIDIString.length);
+
+  //res.send is used instead of res.render, because the data file needs to be sent and not an ejs template rendered
+  res.send(MIDIString);*/
+
+});
+
 //this function opens a page of the individual composer
 app.get('/composers/:number', async (req, res) =>
   {
-    var previousURL = req.session.currentURL;
-    req.session.currentURL = req.url;
+    if(req.session.currentURL != req.url)
+      {
+        var previousURL = req.session.currentURL;
+        req.session.currentURL = req.url;
+      }
+    
 
     const ID = req.params.number;
     var queryResult;
 
     var searchTerm = 'SELECT * FROM Composers WHERE ID = ' + ID;
     
-    const DBtempopen = new sql3.Database('composers.db', sql3.OPEN_READONLY);
+    const DBcomposer = await open({filename: 'composers.db', driver: sqlite3.Database});
 
-    await DBtempopen.get(searchTerm, (error, row) => {
-      queryResult = row;
-    });
+    queryResult = await DBcomposer.get(searchTerm);
 
-    await delay(200);
+    let mainEntity = queryResult.WikidataURL;
 
-    //getting the biographical information from Wikidata
-    let wikiDataResults = wikidataLookup.findPerson(queryResult.Name);
+    //https://github.com/maxlath/wikibase-sdk/blob/main/docs/sparql_query.md
+    //https://stackoverflow.com/questions/72711757/list-all-wikidata-properties-of-a-specific-entity-with-sparql
+    const sparqlQuery = 'SELECT  ?p ?wdLabel ?ps ?ps_ ?ps_Label ?ps_Description ?pq_unitLabel WHERE {   VALUES ?item {     wd:' + mainEntity +'   }   ?item ?p ?statement.   ?statement ?ps ?ps_.   ?wd wikibase:claim ?p;     wikibase:statementProperty ?ps.   OPTIONAL {     ?statement ?pq ?pq_.     ?wdpq wikibase:qualifier ?pq.     ?statement ?pqv [wikibase:quantityUnit ?pq_unit]   }   SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". } }';
 
-    await delay(500);
+    const sparqlUrl = wbk.sparqlQuery(sparqlQuery);
+    //Wikidata requires user agent information in a header
+    //https://foundation.wikimedia.org/wiki/Policy:Wikimedia_Foundation_User-Agent_Policy
+    const sparqlHeader = {'User-Agent': 'ClassicalCatalog/0.0 (LStefanCoder)'};
 
-    console.log(wikiDataResults);
+    //retrieving the data
+    var sparqlJSON = await fetch(sparqlUrl, {method: 'GET', headers: sparqlHeader}).then(function (res) {return res.json();});
 
-    await delay(200);
+    //creating an array of all value descriptions and values to be passed to the ejs file
+    let propertyValues = ['P569', 'P570', 'P19', 'P20', 'P22', 'P25', 'P26'];
+    let resultsValues = sparqlJSON.results.bindings;
+    let dataValues = [];
 
-
-    res.render('composer', {result: queryResult, previousURL: previousURL});
+    //checking in a nested for loop for a list of properties
+    for(var i = 0; i < propertyValues.length; i++)
+      {
+        for(var j = 0; j < resultsValues.length; j++)
+          {
+            if(resultsValues[j].p.value == 'http://www.wikidata.org/prop/' + propertyValues[i])
+              {
+                dataValues.push(resultsValues[j].ps_Label.value);
+              }
+          }
+      }
+    res.render('composer', {result: queryResult, previousURL: previousURL, wikiData: dataValues});
 
   });
 
@@ -493,3 +617,220 @@ function delay(time) {
       setTimeout(resolve, time)
   });
 }
+
+//api in the format of /api/..., responses sent with json
+//https://treblle.com/blog/create-simple-rest-api-json
+
+//retrieving an individual work via the api
+app.get('/api/works/:number', async (req, res) => {
+  const ID = req.params.number;
+  var searchTerm = 'SELECT * FROM MusicPieces WHERE ID = ' + ID;
+  //this search term is used to retrieve the "further information" link and sending it to the page about the individual music piece
+  var composerSearchTerm;
+
+  const DBtempopen = await open({filename: 'music.db', driver: sqlite3.Database});
+  const DBcomposer = await open({filename: 'composers.db', driver: sqlite3.Database});
+
+ // const result = await DBtempopen.get(searchTerm);
+  
+  var queryResult;
+  var composerResult;
+
+  queryResult = await DBtempopen.get(searchTerm);
+
+  var Composer = queryResult.Composer;
+  var Title = queryResult.Title;
+  var SecondTitle = queryResult.SecondTitle;
+  var Part = queryResult.Part;
+  var NoofParts = queryResult.NoofParts;
+  var Year = queryResult.Year;
+  var Genre = queryResult.Genre;
+  var Key = queryResult.Key;
+  var Instruments = queryResult.Instruments;
+  var Link = queryResult.Link;
+  var XML = queryResult.XML;
+
+  //using the xmlbuilder2 module to build an XML file from the string, //https://github.com/oozcitak/xmlbuilder2
+
+  const xmlStr = queryResult.XML;
+  const xmlDoc = xmlbuilder2.create(xmlStr);
+
+
+  //closing the database after the query has been finished
+  await DBtempopen.close();
+
+  //creating a JSON file to be sent to the browser
+  var JSONObj = {};
+  JSONObj["ID"] = ID;
+  JSONObj["Composer"] = Composer;
+  JSONObj["Title"] = Title;
+  JSONObj["SecondTitle"] = SecondTitle;
+  JSONObj["Part"] = Part;
+  JSONObj["NoofParts"] = NoofParts;
+  JSONObj["Year"] = Year;
+  JSONObj["Genre"] = Genre;
+  JSONObj["Key"] = Key;
+  JSONObj["Instruments"] = Instruments;
+  JSONObj["Link"] = Link;
+  JSONObj["XML"] = xmlStr;
+
+  res.json(JSON.parse(JSON.stringify(JSONObj)));
+});
+
+
+app.get('/api/results', async (req, res) => {
+  var key = req.query.key;
+  var genre = req.query.genre;
+  var instruments = req.query.instruments;
+  var composer = req.query.composer;
+
+  var query;
+
+  var searchTerm = req.query.searchbar;
+
+  if(req.query.key == "allKeys")
+    {
+      if(req.query.genre == "allGenres")
+        {
+          if(req.query.instruments == "allInstruments")
+            {
+              if(req.query.composer == "allComposers")
+                {
+                  //the query with the LIKE parameter and the two percentage signs searches where that term is included either at the start or at the end or in the middle of the field
+                  query = " SELECT * FROM MusicPieces WHERE Title LIKE '%" + searchTerm + "%' OR Composer LIKE '%" + searchTerm + "%'";
+                }
+
+              else
+                {
+                  query = " SELECT * FROM MusicPieces WHERE Title LIKE '%" + searchTerm + "%' OR Composer LIKE '%" + searchTerm + "%' AND Composer = '" + composer + "'";
+                }
+              
+            }
+          else
+            {
+              if(req.query.composer == "allComposers")
+                {
+                  query = " SELECT * FROM MusicPieces WHERE (Title LIKE '%" + searchTerm + "%' OR Composer LIKE '%" + searchTerm + "%') AND Instruments = '" + instruments + "'";
+                }
+              
+              else 
+              {
+                  query = " SELECT * FROM MusicPieces WHERE (Title LIKE '%" + searchTerm + "%' OR Composer LIKE '%" + searchTerm + "%') AND Instruments = '" + instruments + "AND Composer = '" + composer + "'";
+              }
+            } 
+        }
+
+      else
+        {
+          if(req.query.instruments == "allInstruments")
+            {
+              if(req.query.composer == "allComposers")
+                {
+                  query = " SELECT * FROM MusicPieces WHERE (Title LIKE '%" + searchTerm + "%' OR Composer LIKE '%" + searchTerm + "%') AND Genre = '" + genre + "'";
+                }
+              else
+              {
+                  query = " SELECT * FROM MusicPieces WHERE (Title LIKE '%" + searchTerm + "%' OR Composer LIKE '%" + searchTerm + "%') AND Composer = '" + composer + "'AND Genre = '" + genre + "'";
+              }
+              
+            }
+          else
+            {
+              if(req.query.composer == "allComposers")
+                {
+                  query = " SELECT * FROM MusicPieces WHERE (Title LIKE '%" + searchTerm + "%' OR Composer LIKE '%" + searchTerm + "%') AND Composer = '" + composer + "AND Genre = '" + genre + "' AND Instruments = '" + instruments + "'";
+                }
+              else
+              {
+                query = " SELECT * FROM MusicPieces WHERE (Title LIKE '%" + searchTerm + "%' OR Composer LIKE '%" + searchTerm + "%') AND Genre = '" + genre + "' AND Instruments = '" + instruments + "'";
+              }
+              
+            }
+          
+        }
+    }
+
+    else
+    {
+
+      key = key.split("/");
+
+      //the trim method removes whitespaces from the start and end of strings while keeping the original, see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/trim
+      key[0] = key[0].trim();
+      key[1] = key[1].trim();
+
+      if(req.query.genre == "allGenres")
+        {
+          if(req.query.instruments == "allInstruments")
+            {
+              query = " SELECT * FROM MusicPieces WHERE (Title LIKE '%" + searchTerm + "%' OR Composer LIKE '%" + searchTerm + "%') AND Key = '" + key[0] + "' OR Key = '" + key[1] + "'";
+            }
+
+          else
+          {
+            query = " SELECT * FROM MusicPieces WHERE (Title LIKE '%" + searchTerm + "%' OR Composer LIKE '%" + searchTerm + "%') AND Key = '" + key[0] + "' OR Key = '" + key[1] + "' AND Instruments = '" + instruments + "'";
+          }
+          
+        }
+
+      else
+        {
+          if(req.query.instruments == "allInstruments")
+            {
+              query = " SELECT * FROM MusicPieces WHERE (Title LIKE '%" + searchTerm + "%' OR Composer LIKE '%" + searchTerm + "%') AND Key = '" + key[0] + "' OR Key = '" + key[1] + "' AND Genre = '" + genre + "'";
+            }
+          else
+          {
+            query = " SELECT * FROM MusicPieces WHERE (Title LIKE '%" + searchTerm + "%' OR Composer LIKE '%" + searchTerm + "%') AND Key = '" + key[0] + "' OR Key = '" + key[1] + "' AND Genre = '" + genre + "' AND Instruments = '" + instruments + "'";
+          }
+          
+        }
+    }
+  
+  //testing a temporary database opening instead of a permanent one in dbconnect.js and export as DB
+  //https://www.sqlitetutorial.net/sqlite-nodejs/
+  const DBtempopen = await open({filename: 'music.db', driver: sqlite3.Database});
+
+  //this array stores all the results 
+  var rows = await DBtempopen.all(searchTerm);
+
+  var results = [];
+
+  rows.forEach(row => {
+      var ID = row.ID;
+      var Composer = row.Composer;
+      var Title = row.Title;
+      var SecondTitle = row.SecondTitle;
+      var Part = row.Part;
+      var NoofParts = row.NoofParts;
+      var Year = row.Year;
+      var Genre = row.Genre;
+      var Key = row.Key;
+      var Instruments = row.Instruments;
+      var Link = row.Link;
+      var XML = row.XML;
+
+      var rowDictionary = {'ID': ID, 'Composer': Composer, 'Title': Title, 'SecondTitle': SecondTitle, 'Part': Part, 'NoofParts': NoofParts, 'Year': Year, 'Genre': Genre, 'Key': Key, 'Instruments': Instruments, 'Link': Link, 'XML': XML, 'PDF': PDF, 'Image': imageBase64};
+      
+      results.push(rowDictionary);
+  });
+
+  await DBtempopen.close();
+
+  res.json(JSON.parse(JSON.stringify(results)));
+
+});
+
+app.get('api/composer/:number', async (req, res) => 
+{
+    const ID = req.params.number;
+    var queryResult;
+
+    var searchTerm = 'SELECT * FROM Composers WHERE ID = ' + ID;
+    
+    const DBcomposer = await open({filename: 'composers.db', driver: sqlite3.Database});
+
+    queryResult = await DBcomposer.get(searchTerm);
+
+    var resultsDictionary = {};
+});

@@ -50,15 +50,18 @@
                   <h2 class="card-title"><%= result[i*2]['Title'] %></h2>
                   <h3 class="card-subtitle mb-2"><%= result[i*2]['Composer'] %></h3>
                   <% if(result[i*2]['NoofParts'] != 1){ %>
-                    <h3 class="card-subtitle mb-2">Part <%= result[i*2]['Part'] %> of <%= result[i*2]['NoofParts'] %></h3>
+                    <h4 class="card-subtitle mb-2">Part <%= result[i*2]['Part'] %> of <%= result[i*2]['NoofParts'] %></h4>
                   <% } %>
+                  <p><%= result[i*2]['Year'] %></p>
                   <!--https://stackoverflow.com/questions/42609853/i-want-to-make-href-tag-dynamic-and-value-will-be-populated-and-i-have-ejs-templ-->
                   <!--icon from https://feathericons.com/, MIT license-->
                   <a href="/works/<%= result[i]['ID'] %>" class="btn card-link">Score</a>
                   <!--<img src="svg/feather-link-2.svg" alt="" style="height: 20px"></img>-->
                 </div>
                 <div class="col-md">
-                  <img class="col-8 cardImage img-thumbnail float-end mw-50" src="data:image/jpeg;base64,<%- result[i]['Image'] %>" alt="">
+                  <!--<img class="col-8 cardImage img-thumbnail float-end mw-50" src="data:image/jpeg;base64,<%- result[i]['Image'] %>" alt="">-->
+                  <!--embedding the image from -->
+                  <img class="col-8 cardImage img-thumbnail float-end mw-50" src="/img/<%= result[i]['ID'] %>.jpeg" alt="">
                 </div>
               </div>
             </div>
@@ -72,19 +75,21 @@
                   <h2 class="card-title"><%= result[i*2 + 1]['Title'] %></h2>
                   <h3 class="card-subtitle mb-2"><%= result[i*2 + 1]['Composer'] %></h3>
                   <% if(result[i*2 + 1]['NoofParts'] != 1){ %>
-                    <h3 class="card-subtitle mb-2">Part <%= result[i*2 + 1]['Part'] %> of <%= result[i*2 + 1]['NoofParts'] %></h3>
+                    <h4 class="card-subtitle mb-2">Part <%= result[i*2 + 1]['Part'] %> of <%= result[i*2 + 1]['NoofParts'] %></h4>
                   <% } %>
+                  <p><%= result[i*2 + 1]['Year'] %></p>
                   <!--https://stackoverflow.com/questions/42609853/i-want-to-make-href-tag-dynamic-and-value-will-be-populated-and-i-have-ejs-templ-->
                   <!--icon from https://feathericons.com/, MIT license-->
                   <a href="/works/<%= result[i]['ID'] %>" class="btn card-link">Score</a>
                   <!--<img src="svg/feather-link-2.svg" alt="" style="height: 20px"></img>-->
                 </div>
                 <div class="col-md">
-                  <img class="col-8 cardImage img-thumbnail float-end mw-50" src="data:image/jpeg;base64,<%- result[i]['Image'] %>" alt="">
+                  <img class="col-8 cardImage img-thumbnail float-end mw-50" src="/img/<%= result[i]['ID'] %>.jpeg" alt="">
                 </div>
               </div>
             </div>
           </div>
+          <!--including an empty column in case there is an odd number of results-->
           <% } else { %>
             <div class="col-lg">
 

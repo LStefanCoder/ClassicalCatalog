@@ -18,13 +18,13 @@
         <a class="navbar-aboutlink link-underline link-underline-opacity-0" href="/about">About</a>
       </nav>
       
-    <!--the back arrow redirects to the main page-->
-    <a href=""><img src="../svg/left-arrow-circle2-svgrepo-com.svg" alt="" style="height: 50px" class="pdfIcon"></a>
+    <!--the back arrow redirects to the previous page-->
+    <a href="<%= previousURL %>"><img src="../svg/left-arrow-circle2-svgrepo-com.svg" alt="" style="height: 50px" class="pdfIcon"></a>
     <h1><%= result['Name'] %></h1>
     <div style="height: 50px"></div>
     <img src="<%= result['Image'] %>" style="height: 400px" alt="">
     <div style="height: 50px"></div>
-    <p>Born: <%= result['DateofBirth'] %>. Died: <%= result['DateofDeath'] %></p>
+    <p>Born: <%= wikiData[0] %> in <%= wikiData[3] %>. Died: <%= wikiData[2] %> in <%= wikiData[4] %></p>
     <p><%= result['Text'] %></p>
     <a href="<%= result['FurtherInfoLink'] %>"><p>Further information (external link)</p></a>
 </body>
