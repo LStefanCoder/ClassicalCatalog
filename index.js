@@ -37,15 +37,6 @@ const wbk = WBK({
   sparqlEndpoint: 'https://query.wikidata.org/sparql'
 })
 
-//error with the pdfjs-dist library, see https://community.n8n.io/t/solution-workaround-dommatrix-is-not-defined-error-in-extract-from-file-pdf-node-on-n8n-v1-98-0/135568
-//import { getDocument } from "pdfjs-dist/build/pdf.mjs";
-
-//https://github.com/hyzyla/pdfium
-//import { PDFiumLibrary } from "@hyzyla/pdfium";
-//import { promises as fs } from 'fs';
-//library for converting raw bitmap data to JPG images
-//https://www.npmjs.com/package/sharp
-//import * as sharp from 'sharp';
 
 
 //this way of loading seems to be working with "type: module" in the package.json; https://github.com/jsdom/jsdom/issues/2514
@@ -68,10 +59,6 @@ const { OSMDisplay } = OpenSheetMusicDisplay;
 //making it possible to make the require path command, https://stackoverflow.com/questions/69099763/referenceerror-require-is-not-defined-in-es-module-scope-you-can-use-import-in , https://nodejs.org/api/module.html#modulecreaterequirefilename, https://stackoverflow.com/questions/59443525/require-not-working-in-module-type-nodejs-script
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
-
-//const Prom = require('sqlite3-promisify');
-
-//const path = require('path');
 
 //recreating the usual dirname variable https://iamwebwiz.medium.com/how-to-fix-dirname-is-not-defined-in-es-module-scope-34d94a86694d
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
@@ -158,7 +145,6 @@ app.get('/results', async (req, res) => {
   var genre = req.query.genre;
   var instruments = req.query.instruments;
   var composer = req.query.composer;
-  //var year = req.query.year;
 
   var query;
 
@@ -260,26 +246,16 @@ app.get('/results', async (req, res) => {
           
         }
     }
-  
-  //testing a temporary database opening instead of a permanent one in dbconnect.js and export as DB
-  //https://www.sqlitetutorial.net/sqlite-nodejs/
-  //const DBtempopen = new sql3.Database('music.db', sql3.OPEN_READONLY);
 
   sqlite3.verbose();
 
   const DBtempopen = await open({filename: 'music.db', driver: sqlite3.Database})
 
-  
-  //making the database query return a promise, since
-  //DBtempopen.allP = util.promisify(DBtempopen.all);
 
   //this array stores all the results 
   var rows = [];
 
   const results = await DBtempopen.all(query);
-
-  //console.log(results);
-  //console.log(results.length);
 
   results.forEach(row => {
     var ID = row.ID;
@@ -295,76 +271,14 @@ app.get('/results', async (req, res) => {
       var Link = row.Link;
       var XML = row.XML;
       var PDF = row.PDF;
-      var image = row.Image;
 
-      //this const is needed, since the "Buffer" method has been deprecated in newer versions of Node.js
-      //documentation: https://nodejs.org/api/buffer.html#buftostringencoding-start-end
-      //also https://stackoverflow.com/questions/51692042/how-to-display-a-type-blob-image-to-ejs-web-page
-
-      //https://towardsdev.com/handling-image-base64-data-on-server-side-in-nodejs-8bb43982ad38
-      const data = image.toString('utf8');
-      const base64Data = data.replace('/^data:image\/jpeg;base64,/', "");
-      const imageBuffer = Buffer.from(base64Data, 'base64');
-
-      var rowDictionary = {'ID': ID, 'Composer': Composer, 'Title': Title, 'SecondTitle': SecondTitle, 'Part': Part, 'NoofParts': NoofParts, 'Year': Year, 'Genre': Genre, 'Key': Key, 'Instruments': Instruments, 'Link': Link, 'XML': XML, 'PDF': PDF, 'Image': imageBuffer};
+      var rowDictionary = {'ID': ID, 'Composer': Composer, 'Title': Title, 'SecondTitle': SecondTitle, 'Part': Part, 'NoofParts': NoofParts, 'Year': Year, 'Genre': Genre, 'Key': Key, 'Instruments': Instruments, 'Link': Link, 'XML': XML, 'PDF': PDF};
       
       rows.push(rowDictionary);
   });
 
-  await delay(100);
-
-  //console.log(rows);
-
-  //var results = [];
-
-  //https://medium.com/@codesprintpro/getting-started-sqlite3-with-nodejs-8ef387ad31c4
-  /*await DBtempopen.all(query, (error, rows) => {
-    rows.forEach((row) => {
-      //pushing all values to a new array of dictionaries
-
-      //first, all values are stored in a variable
-
-      var ID = row.ID;
-      var Composer = row.Composer;
-      var Title = row.Title;
-      var SecondTitle = row.SecondTitle;
-      var Part = row.Part;
-      var NoofParts = row.NoofParts;
-      var Year = row.Year;
-      var Genre = row.Genre;
-      var Key = row.Key;
-      var Instruments = row.Instruments;
-      var Link = row.Link;
-      var XML = row.XML;
-      var PDF = row.PDF;
-      var image = row.Image;
-
-      //this const is needed, since the "Buffer" method has been deprecated in newer versions of Node.js
-      //documentation: https://nodejs.org/api/buffer.html#buftostringencoding-start-end
-      //also https://stackoverflow.com/questions/51692042/how-to-display-a-type-blob-image-to-ejs-web-page
-      const buf1 = Buffer(image);
-
-      var imageBase64 = buf1.toString('base64');
-
-      var rowDictionary = {'ID': ID, 'Composer': Composer, 'Title': Title, 'SecondTitle': SecondTitle, 'Part': Part, 'NoofParts': NoofParts, 'Year': Year, 'Genre': Genre, 'Key': Key, 'Instruments': Instruments, 'Link': Link, 'XML': XML, 'PDF': PDF, 'Image': imageBase64};
-      
-      results.push(rowDictionary);
-      console.log(image.length);
-      console.log(imageBase64.length);
-      //console.log(results.length);
-
-      //https://stackoverflow.com/questions/53707410/async-await-not-working-with-callback-node-without-promise?rq=3
-      //https://stackoverflow.com/questions/67464286/how-to-make-an-async-function-wait-for-database-queries-to-finish-before-resolvi
-      
-    });
-
-    //storing the current URL in a variable, https://stackoverflow.com/questions/33120874/node-js-get-previous-url
-});*/
-
 //closing the database after the necessary queries have been done
   await DBtempopen.close();
-
-  await delay(100);
 
   res.render('results', {
   result: results,
@@ -373,8 +287,6 @@ app.get('/results', async (req, res) => {
   term: searchTerm,
   previousURL: previousURL
 });
-
-//await delay(100);
 
 }); 
 
@@ -393,7 +305,7 @@ app.get('/works/:number', async (req, res) =>
   const ID = req.params.number;
   var searchTerm = 'SELECT * FROM MusicPieces WHERE ID = ' + ID;
   //this search term is used to retrieve the "further information" link and sending it to the page about the individual music piece
-  var composerSearchTerm;
+  var composerSearchTerm = 'SELECT * FROM Composers WHERE Name = "' + queryResult.Composer + '"';
 
   sqlite3.verbose();
 
@@ -402,10 +314,6 @@ app.get('/works/:number', async (req, res) =>
   
   var queryResult;
   var composerResult;
-  var queryXML = ``;
-  var XMLSTEP1;
-  var XMLTOSEND;
-  var XMLStr = "";
 
   var MIDIData;
 
@@ -416,12 +324,8 @@ app.get('/works/:number', async (req, res) =>
   const xmlStr = queryResult.XML;
   const xmlDoc = xmlbuilder2.create(xmlStr);
 
-  //await delay(200);
-
   //closing the database after the query has been finished
   await DBtempopen.close();
-
-  composerSearchTerm = 'SELECT * FROM Composers WHERE Name = "' + queryResult.Composer + '"';
 
   composerResult = await DBcomposer.get(composerSearchTerm);
 
@@ -444,7 +348,6 @@ app.get('/works/:number', async (req, res) =>
     console.log(MIDIString.length);
  });
 
- console.log(req.session.currentURL);
 
   res.render('piece', {result: queryResult, composer: composerResult, XML: xmlDoc, osmdisplay: OSMDisplay, midiData:MIDIString, previousURL: previousURL});
 
@@ -609,14 +512,6 @@ app.get('/about', async(req, res) =>{
 
 });
 
-//https://www.google.com/search?q=display+database+search+results+with+ejs&oq=display+database+search+results+with+ejs&gs_lcrp=EgZjaHJvbWUyBggAEEUYOdIBCDg5NTBqMGoxqAIIsAIB&sourceid=chrome&ie=UTF-8
-
-//test function for delaying a set amount of time
-function delay(time) {
-  return new Promise(function(resolve) { 
-      setTimeout(resolve, time)
-  });
-}
 
 //api in the format of /api/..., responses sent with json
 //https://treblle.com/blog/create-simple-rest-api-json
@@ -625,13 +520,8 @@ function delay(time) {
 app.get('/api/works/:number', async (req, res) => {
   const ID = req.params.number;
   var searchTerm = 'SELECT * FROM MusicPieces WHERE ID = ' + ID;
-  //this search term is used to retrieve the "further information" link and sending it to the page about the individual music piece
-  var composerSearchTerm;
 
   const DBtempopen = await open({filename: 'music.db', driver: sqlite3.Database});
-  const DBcomposer = await open({filename: 'composers.db', driver: sqlite3.Database});
-
- // const result = await DBtempopen.get(searchTerm);
   
   var queryResult;
   var composerResult;
@@ -684,9 +574,11 @@ app.get('/api/results', async (req, res) => {
   var instruments = req.query.instruments;
   var composer = req.query.composer;
 
+  console.log(key);
+
   var query;
 
-  var searchTerm = req.query.searchbar;
+  var searchTerm = req.query.term;
 
   if(req.query.key == "allKeys")
     {
@@ -792,7 +684,7 @@ app.get('/api/results', async (req, res) => {
   const DBtempopen = await open({filename: 'music.db', driver: sqlite3.Database});
 
   //this array stores all the results 
-  var rows = await DBtempopen.all(searchTerm);
+  var rows = await DBtempopen.all(query);
 
   var results = [];
 
@@ -808,9 +700,11 @@ app.get('/api/results', async (req, res) => {
       var Key = row.Key;
       var Instruments = row.Instruments;
       var Link = row.Link;
-      var XML = row.XML;
+      //the link to the XML and PDF files is included here
+      var XML = '/works/' + ID + '/xml';
+      var PDF = '/works/' + ID + '/pdf';
 
-      var rowDictionary = {'ID': ID, 'Composer': Composer, 'Title': Title, 'SecondTitle': SecondTitle, 'Part': Part, 'NoofParts': NoofParts, 'Year': Year, 'Genre': Genre, 'Key': Key, 'Instruments': Instruments, 'Link': Link, 'XML': XML, 'PDF': PDF, 'Image': imageBase64};
+      var rowDictionary = {'ID': ID, 'Composer': Composer, 'Title': Title, 'SecondTitle': SecondTitle, 'Part': Part, 'NoofParts': NoofParts, 'Year': Year, 'Genre': Genre, 'Key': Key, 'Instruments': Instruments, 'Link': Link, 'XML': XML, 'PDF': PDF};
       
       results.push(rowDictionary);
   });
@@ -821,7 +715,7 @@ app.get('/api/results', async (req, res) => {
 
 });
 
-app.get('api/composer/:number', async (req, res) => 
+/*app.get('api/composer/:number', async (req, res) => 
 {
     const ID = req.params.number;
     var queryResult;
@@ -833,4 +727,4 @@ app.get('api/composer/:number', async (req, res) =>
     queryResult = await DBcomposer.get(searchTerm);
 
     var resultsDictionary = {};
-});
+});*/
