@@ -6,42 +6,36 @@
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/results.css">
     <script src="js/bootstrap.min.js"></script>
-
-    <!--on this page, OpenSheetMusicDisplay is used to show a preview of the score-->
-    <script src="../../js/opensheetmusicdisplay.min.js"></script>
-
-    <!--https://gist.github.com/imolorhe/f8794d3bb55e1a8065b23bcd0efeebe1-->
     
     <title>Search results</title>
   </head>
   <body>
+      
+    <!--the navbar-->
+    <nav class="navbar sticky-top navbar-light p-2">
+      <h3 class="navbarHeader"><a class="navbarMainlink" href="/">Classical Catalog</a></h3>
+      <!--the link-underline-opacity-0 property removes the underline effect from the link-->
+      <a class="navbarAboutlink link-underline link-underline-opacity-0" href="/about">About</a>
+    </nav>
 
-        <!--the sticky navbar-->
-        <nav class="navbar sticky-top navbar-light bg-light">
-          <h3 class="navbarHeader"><a class="navbarMainlink" href="/">Music database</a></h3>
-          <!--the link-underline-opacity-0 property removes the underline effect from the link-->
-          <a class="navbarAboutlink link-underline link-underline-opacity-0" href="/about">About</a>
-        </nav>
+    <div class="separator"></div>
 
     <div class="mx-auto" style="align-content: center;">
         <h1>Search results for "<%= term %>"</h1>
+        <!--the number of results comes from the length variable-->
         <h2 class="centertext"> <%= length %> results found!</h2>
     </div>
     
     <!--a spacer-->
     <div style="height: 20px"></div>
 
-    
-
     <!--based on https://www.digitalocean.com/community/tutorials/how-to-use-ejs-to-template-your-node-application-->
-    
     <!--the Math.floor ensures that the result is always an integer-->
       <% for(var i=0; i<(Math.ceil(result.length/2)); i++) {%>
 
         <!--https://codepen.io/nikki-peel/pen/RwavQer-->
         <!--w-50 means 50% of page width, and mx-auto centers the card-->
         <div class="row">
-          <!--i*2, i*2+1-->
           <% if(result[i*2]) { %>
           <div class="col-lg">
             <div class="card w-75 mx-auto border-gradient border-gradient-blue rounded-2">
@@ -56,11 +50,9 @@
                   <!--https://stackoverflow.com/questions/42609853/i-want-to-make-href-tag-dynamic-and-value-will-be-populated-and-i-have-ejs-templ-->
                   <!--icon from https://feathericons.com/, MIT license-->
                   <a href="/works/<%= result[i]['ID'] %>" class="btn card-link">Score</a>
-                  <!--<img src="svg/feather-link-2.svg" alt="" style="height: 20px"></img>-->
                 </div>
                 <div class="col-md">
-                  <!--<img class="col-8 cardImage img-thumbnail float-end mw-50" src="data:image/jpeg;base64,<%- result[i]['Image'] %>" alt="">-->
-                  <!--embedding the image from -->
+                  <!--embedding the image from the images folder, using the ID of the piece-->
                   <img class="col-8 cardImage img-thumbnail float-end mw-50" src="/img/<%= result[i]['ID'] %>.jpeg" alt="">
                 </div>
               </div>
@@ -81,7 +73,6 @@
                   <!--https://stackoverflow.com/questions/42609853/i-want-to-make-href-tag-dynamic-and-value-will-be-populated-and-i-have-ejs-templ-->
                   <!--icon from https://feathericons.com/, MIT license-->
                   <a href="/works/<%= result[i]['ID'] %>" class="btn card-link">Score</a>
-                  <!--<img src="svg/feather-link-2.svg" alt="" style="height: 20px"></img>-->
                 </div>
                 <div class="col-md">
                   <img class="col-8 cardImage img-thumbnail float-end mw-50" src="/img/<%= result[i]['ID'] %>.jpeg" alt="">
@@ -89,7 +80,7 @@
               </div>
             </div>
           </div>
-          <!--including an empty column in case there is an odd number of results-->
+          <!--including an empty column on the right in case there is an odd number of results-->
           <% } else { %>
             <div class="col-lg">
 
@@ -99,21 +90,7 @@
       </div>
     </div>
      <% } %>
-
-        <!--https://www.bootdey.com/snippets/view/General-Search-Results#html-->
-    
-
-        <script>
-          //https://stackoverflow.com/questions/70015641/how-can-i-use-pdf-js-to-display-the-first-page-of-every-user-uploaded-pdf-file-a
-          //this script should get the first page of a pdf file and render it to a canvas
-          
-          //https://mozilla.github.io/pdf.js/examples/
-          
-
-
-          
-        </script>
-
+  
   </body>
 </html>
 

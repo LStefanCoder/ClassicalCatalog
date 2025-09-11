@@ -7,15 +7,15 @@
     <link href="../css/piece.css" rel="stylesheet" >
     <script src="../js/bootstrap.min.js"></script>
     
-    <script src="../../js/opensheetmusicdisplay.min.js"></script>
+    <script src="../js/opensheetmusicdisplay.min.js"></script>
     
     <title>Music piece</title>
 </head>
 <body>
 
     <!--the navbar comes first-->
-    <nav class="navbar sticky-top navbar-light bg-light">
-      <h3 class="navbarHeader"><a class="navbarMainlink" href="/">Music database</a></h3>
+    <nav class="navbar sticky-top navbar-light p-2">
+      <h3 class="navbarHeader"><a class="navbarMainlink" href="/">Classical Catalog</a></h3>
       <!--the link-underline-opacity-0 property removes the underline effect from the link-->
       <a class="navbarAboutlink link-underline link-underline-opacity-0" href="/about">About</a>
     </nav>
@@ -44,15 +44,15 @@
     
         <!--this page leads the user to further information about the composer-->
         <p><a href="/composers/<%= composer['ID'] %>">Information about the composer</a></p>
-        <!--<p><a href="/results?composer=<%= result['Composer'] %>&genre=allGenres&key=allKeys&instruments=allInstruments">More from this composer</a></p>-->
       </div>
       <div class="col-lg">
         <!--PDF icon from svgrepo.com, CC0 license-->
-        <!--the link to the PDF file of the score-->
+        <!--the link to the PDF and XML files of the score-->
         <h3>The score</h3>
-        <p><a href="/works/<%= result['ID'] %>/pdf""><img src="../svg/pdf-file-format-symbol-svgrepo-com.svg" alt="" style="height: 50px" class="pdfIcon"></a></p>
+        <p><a href="/works/<%= result['ID'] %>/pdf""><img src="../svg/pdf-file-format-symbol-svgrepo-com.svg" alt="" style="height: 50px" class="icon"></a></p>
         <div style="height: 1em;"></div>
-        <p><a href="/works/<%= result['ID'] %>/xml"><img src="../svg/svgicon.svg" alt="" style="height: 50px" class="pdfIcon"></a></p>
+        <!--the icon here is the same as the icon above-->
+        <p><a href="/works/<%= result['ID'] %>/xml"><img src="../svg/svgicon.svg" alt="" style="height: 50px" class="icon"></a></p>
       </div>
     </div>
     
@@ -83,24 +83,23 @@
     <div class="separator"></div>
   
     <h3>Preview</h3>
-    <p>The first two measures</p>
 
     <!--this div contains the score as rendered by OSMD-->
     <!--the height of the score can be adjusted here-->
     <!--contains the XML data-->
-    <div id="sheetMusicContainer" style="height: 100px">
+    <div id="sheetMusicContainer">
     </div>
+
     <script>
       
         var XMLStartString = `<%= result['XML'] %>`;
+        //in order for the string to be useable, the 
         var XMLUnescapedString = XMLStartString.replace(/&amp;/g, '&')
-  .replace(/&lt;/g, '<')
-  .replace(/&gt;/g, '>')
-  .replace(/&quot;/g, '"')
-  .replace(/&#34;/g, '"')
-  .replace(/&#39;/g, "'");;
-
-        
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#34;/g, '"')
+        .replace(/&#39;/g, "'");;
 
         var XMLString = XMLUnescapedString;
 
@@ -111,8 +110,8 @@
           backend: "svg",
           //disabled, because the credits are already displayed above
           drawCredits: false,
-          drawingParameters: "compacttight", // don't display title, composer etc., smaller margins
-          drawUpToMeasureNumber: 2
+          drawingParameters: "compacttight", //doesn't display title, composer etc., smaller margins
+          drawUpToMeasureNumber: 2 //draws only the first two measures, to save space
         });
         //reducing the size of the score that it doesn't overwhelme the entire page
         osmd.zoom = 0.01;
@@ -125,12 +124,9 @@
           );
       </script>
 
+<div class="separator"></div>
+
   </div>
 
 </body>
 </html>
-
-
-<!--see image here: https://github.com/opensheetmusicdisplay/opensheetmusicdisplay/issues/658
-https://github.com/opensheetmusicdisplay/opensheetmusicdisplay/blob/4068565/src/MusicalScore/Graphical/EngravingRules.ts#L443
-MaxPageToDrawNumber here https://opensheetmusicdisplay.github.io/classdoc/classes/EngravingRules.html#MaxPageToDrawNumber-->

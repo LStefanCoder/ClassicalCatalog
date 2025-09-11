@@ -20,16 +20,16 @@ p {
 }
 
 .navbar {
-  background-color: #001a49;;
+    background-color: #001a49;
 }
 
-.navbarMaintext {
-
+.navbarMainLink {
+  color: #507ed3;
 }
 
 .navbarAboutlink {
   box-shadow: inset 0 0 0 0 #0049e6;
-  color: #0049e6;
+  color: #507ed3;
 	padding: 0 .25rem;
 	margin: 0 -.25rem;
   transition: color .3s ease-in-out, box-shadow .3s ease-in-out;
@@ -41,7 +41,7 @@ p {
 }
 
 /*this cascade of filters enables changing the color of an svg file by first making it medium-gray, convert it to sepia and then change its color via the hue-rotate filter, see https://css-tricks.com/the-many-ways-to-change-an-svg-fill-on-hover-and-when-to-use-them/*/
-.pdfIcon:hover {
+.icon:hover {
     filter: 
     invert(0.5)
     sepia(1)

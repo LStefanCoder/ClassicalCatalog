@@ -10,22 +10,28 @@
     <title>Main page</title>
 </head>
 <body>
-    <!--the navbar-->
 
-    <nav class="navbar sticky-top navbar-light bg-light">
-        <a class="navbar-brand" href="/">Music database</a>
+    <!--the navbar-->
+    <nav class="navbar sticky-top navbar-light p-2">
+        <h3 class="navbarHeader"><a class="navbarMainlink" href="/">Classical Catalog</a></h3>
         <!--the link-underline-opacity-0 property removes the underline effect from the link-->
-        <a class="navbar-aboutlink link-underline link-underline-opacity-0" href="/about">About</a>
-      </nav>
-      
+        <a class="navbarAboutlink link-underline link-underline-opacity-0" href="/about">About</a>
+    </nav>
+
     <!--the back arrow redirects to the previous page-->
-    <a href="<%= previousURL %>"><img src="../svg/left-arrow-circle2-svgrepo-com.svg" alt="" style="height: 50px" class="pdfIcon"></a>
+    <a href="<%= previousURL %>"><img src="../svg/left-arrow-circle2-svgrepo-com.svg" alt="" style="height: 50px" class="icon"></a>
+
+    <div class="mainBody">
     <h1><%= result['Name'] %></h1>
     <div style="height: 50px"></div>
     <img src="<%= result['Image'] %>" style="height: 400px" alt="">
     <div style="height: 50px"></div>
-    <p>Born: <%= wikiData[0] %> in <%= wikiData[3] %>. Died: <%= wikiData[2] %> in <%= wikiData[4] %></p>
-    <p><%= result['Text'] %></p>
+    <!--inserting all the Wikidata values one after another-->
+    <p>Born: <%= wikiData[0] %> in <%= wikiData[3] %>. Died: <%= wikiData[2] %> in <%= wikiData[4] %>.</p>
+    <p>Father: <%= wikiData[5] %>. Mother: <%= wikiData[6] %></p>
+    <p>Spouse: <%= wikiData[7] %></p>
     <a href="<%= result['FurtherInfoLink'] %>"><p>Further information (external link)</p></a>
+
+    </div>
 </body>
 </html>

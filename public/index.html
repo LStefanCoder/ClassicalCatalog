@@ -4,34 +4,22 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="css/bootstrap.min.css" rel="stylesheet">
-    <!--the toolcool styles-->
-    <link rel="stylesheet" href="css/tcrs-themes.min.css">
     <link rel="stylesheet" href="css/index.css" rel="stylesheet">
     <script src="js/bootstrap.min.js"></script>
-    <!--<script src="js/indexpage.js"></script>-->
-    <!--<script src="node_modules/"></script>-->
-    <!--https://github.com/mzusin/toolcool-range-slider?tab=readme-ov-file-->
-    <script src="js/toolcool-range-slider.min.js"></script>
-    <script src="js/tcrs-marks.min.js"></script>
-    <script src="js/tcrs-moving-tooltip.min.js"></script>
 
     <title>Main page</title>
   </head>
   <body>
 
     <!--the sticky navbar-->
-
-    <nav class="navbar sticky-top navbar-light">
-      <h3 class="navbarHeader"><a class="navbarMainlink" href="/">Music database</a></h3>
+    <nav class="navbar sticky-top navbar-light p-2">
+      <h3 class="navbarHeader"><a class="navbarMainlink" href="/">Classical Catalog</a></h3>
       <!--the link-underline-opacity-0 property removes the underline effect from the link-->
       <a class="navbarAboutlink link-underline link-underline-opacity-0" href="/about">About</a>
     </nav>
 
-    <script>import $ from 'jquery'; //importing jquery, see https://stackoverflow.com/questions/58320283/how-do-i-use-jquery-in-my-html-after-npm-install</script>
-
     <!--https://bootstrapexamples.com/@anonymous/search-bar-->
     <!--https://codepen.io/bogdansandu/pen/ogNyGgm, https://www.sliderrevolution.com/resources/bootstrap-search-box/-->
-
       <div class="form-container main-searchform">
         <h2 class="mb-4">Music database search</h2>
         <form action="/results">
@@ -50,7 +38,6 @@
                 <option value="Johann Sebastian Bach">Johann Sebastian Bach</option>
                 <option value="Joseph Haydn">Joseph Haydn</option>
                 <option value="Johannes Brahms">Johannes Brahms</option>
-                <option value="Antonio Vivaldi">Antonio Vivaldi</option>
                 <option value="Sergei Prokofiev">Sergei Prokofiev</option>
                 <option value="Sergei Rachmaninoff">Sergei Rachmaninoff</option>
                 <option value="Claude Debussy">Claude Debussy</option>
@@ -107,22 +94,6 @@
               <option value="Orchestra">Orchestra</option>
             </select>
           </div>
-        
-          <div class="mb-4">
-            <p class="search-label"><i class="bi bi-cash-stack me-2"></i>Year of composition</p>
-            <tc-range-slider 
-            id="yearSlider"
-            name="year"
-            value1="50" value2="70" step="3.33"
-            theme="rect" 
-            css-links="css/tcrs-themes.min.css"
-            marks="true"
-            marks-count="11"
-            marks-values-count="31"
-            round="0"
-            generate-labels="true"
-            ></tc-range-slider>
-          </div>
             
             <button class="btn btn-primary w-100 py-3 search-btn" type="submit" onclick="">
               <!--Icon by feather icons, MIT license, https://github.com/feathericons/feather-->
@@ -131,14 +102,7 @@
         </form>
 
     </div>
-</div>
-
-
-
-<script src="http://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/browse/@coreui/coreui@2.1.16/dist/js/coreui.min.js"></script>
-
+  </div>
 
   </body>
 </html>

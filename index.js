@@ -1,12 +1,6 @@
-//https://apidog.com/blog/how-to-create-a-rest-api-with-node-js-and-express/
-
-
 //in the package.json, a "type": "module" command is necessary to treat all js files as modules
-//import {DB} from './dbconnect.js';
-//import {search} from './dbconnect.js';
 import express from 'express';
 import bodyParser from 'body-parser';
-import opensheetmusicdisplay from 'opensheetmusicdisplay';
 
 
 import sqlite3 from 'sqlite3';
@@ -15,21 +9,15 @@ const sql3 = sqlite3.verbose();
 //https://www.npmjs.com/package/sqlite
 import { open } from 'sqlite';
 
-
-
 import path from 'path';
 import { fileURLToPath } from 'url';
-//for parsing XML code from string
-import {DOMParser, parseHTML} from 'linkedom';
-//the Node file system module, required to write files to disk
-import * as fs from 'node:fs';
-
-import * as util from 'util';
 
 //setting up the necessary code to query Wikidata, displaying the results on the composer pages
 //https://www.npmjs.com/package/wikibase-sdk#wikibase-api
+//this way of loading seems to be working with "type: module" in the package.json; https://github.com/jsdom/jsdom/issues/2514
 import { WBK } from 'wikibase-sdk'
 //https://github.com/maxlath/wikibase-sdk/blob/main/docs/simplify_claims.md#simplifyclaims
+//this is used later for querying
 import { simplifyClaims } from 'wikibase-sdk'
 
 const wbk = WBK({
@@ -37,21 +25,8 @@ const wbk = WBK({
   sparqlEndpoint: 'https://query.wikidata.org/sparql'
 })
 
-
-
-//this way of loading seems to be working with "type: module" in the package.json; https://github.com/jsdom/jsdom/issues/2514
-import { JSDOM } from 'jsdom';
 //https://github.com/oozcitak/xmlbuilder2
 import xmlbuilder2 from 'xmlbuilder2';
-
-//https://book.verovio.org/installing-or-building-from-sources/javascript-and-webassembly.html
-//Verovio supports converting from MusicXML to Midi
-//this import method is specifically for the ESM type imports
-import createVerovioModule from 'verovio/wasm';
-import { VerovioToolkit } from 'verovio/esm';
-//import fs from 'node:fs';
-
-//import {xml} from 'xml';
 
 import OpenSheetMusicDisplay from 'opensheetmusicdisplay';
 const { OSMDisplay } = OpenSheetMusicDisplay;
@@ -72,19 +47,18 @@ uuidv4();
 //the express-session module enables us to store variables in the same session between different get requests
 const session = require('express-session');
 
-//before I declare all the app.use methods, I first create a session, so that the previous URL can be stored in a session variable
+//before declaring all the app.use methods, a session is needed, so that the previous URL can be stored in a session variable
+//the return button on the pages works this way
 //see https://stackoverflow.com/questions/57451882/how-to-set-property-to-req-session
-
-
 //we need to set session as a middleware for the entire application, see https://medium.com/@mfahadqureshi786/creating-session-in-nodejs-a72d5544e4d1
 app.use(session(
   {
     name:'mainCookie',
-    genid: function(req) {//console.log('session created');
+    genid: function(req) {
       return uuidv4();
     },
     resave: false,
-    secret: 'SomeSecretMessage',
+    secret: 'message', //this value is required for a session, but it is not used
     saveUninitialized: false,
     cookie: {secure: false, expires:60000},
     currentURL: '/'
@@ -111,8 +85,6 @@ app.get('/', (req, res) => {
     //when the application is on its main page, the variable used for retrieving the previous url for the "back" button is set to the main URL
     //this variable is stored in session, which means it can be retrieved from different get requests
     //see https://stackoverflow.com/questions/33120874/node-js-get-previous-url/33122205
-    //req.session.currentURL;
-    //console.log(req.session.currentURL);
 });
 
 const port = 3000;
@@ -123,8 +95,8 @@ app.listen(port, (err) => {
       //printing the error message to the console
       console.log(err.message);
     }
+    //printing the port number to the console
     console.log("Listening on port " + port.toString());
-  
 });
 
 //https://medium.com/@nicholasstepanov/search-your-server-side-mysql-database-from-node-js-website-400cd68049fa
@@ -249,13 +221,13 @@ app.get('/results', async (req, res) => {
 
   sqlite3.verbose();
 
-  const DBtempopen = await open({filename: 'music.db', driver: sqlite3.Database})
+  const musicDB = await open({filename: 'music.db', driver: sqlite3.Database})
 
 
   //this array stores all the results 
   var rows = [];
 
-  const results = await DBtempopen.all(query);
+  const results = await musicDB.all(query);
 
   results.forEach(row => {
     var ID = row.ID;
@@ -278,7 +250,7 @@ app.get('/results', async (req, res) => {
   });
 
 //closing the database after the necessary queries have been done
-  await DBtempopen.close();
+  await musicDB.close();
 
   res.render('results', {
   result: results,
@@ -304,20 +276,20 @@ app.get('/works/:number', async (req, res) =>
 
   const ID = req.params.number;
   var searchTerm = 'SELECT * FROM MusicPieces WHERE ID = ' + ID;
-  //this search term is used to retrieve the "further information" link and sending it to the page about the individual music piece
-  var composerSearchTerm = 'SELECT * FROM Composers WHERE Name = "' + queryResult.Composer + '"';
 
   sqlite3.verbose();
 
-  const DBtempopen = await open({filename: 'music.db', driver: sqlite3.Database});
-  const DBcomposer = await open({filename: 'composers.db', driver: sqlite3.Database});
+  const musicDB = await open({filename: 'music.db', driver: sqlite3.Database});
+  const composerDB = await open({filename: 'composers.db', driver: sqlite3.Database});
   
   var queryResult;
   var composerResult;
 
-  var MIDIData;
+  queryResult = await musicDB.get(searchTerm);
 
-  queryResult = await DBtempopen.get(searchTerm);
+  //this search term is used to retrieve the "further information" link and sending it to the page about the individual music piece
+  //this term relies on the result of the music database query
+  var composerSearchTerm = 'SELECT * FROM Composers WHERE Name = "' + queryResult.Composer + '"';
 
   //using the xmlbuilder2 module to build an XML file from the string, //https://github.com/oozcitak/xmlbuilder2
 
@@ -325,31 +297,13 @@ app.get('/works/:number', async (req, res) =>
   const xmlDoc = xmlbuilder2.create(xmlStr);
 
   //closing the database after the query has been finished
-  await DBtempopen.close();
+  await musicDB.close();
 
-  composerResult = await DBcomposer.get(composerSearchTerm);
+  composerResult = await composerDB.get(composerSearchTerm);
 
-  await DBcomposer.close();
+  await composerDB.close();
 
-  let MIDIString;
-
-  //opening Verovio and converting the MusicXML to MEI and that to MIDI
-  createVerovioModule().then(VerovioModule => {
-    const verovioToolkit = new VerovioToolkit(VerovioModule);
-    //the plain string is needed, not the converted string intended for the preview with OSMD
-    const score = xmlStr;
-    //console.log(score);
-    verovioToolkit.loadData(score);
-    //rendering the score to MIDI data, which is then sent to the browser
-    //https://book.verovio.org/verovio-reference-book.pdf, p. 29
-    //also https://www.npmjs.com/package/verovio
-    MIDIData = verovioToolkit.renderToMIDI();
-    MIDIString = 'data:audio/midi;base64,' + MIDIData;
-    console.log(MIDIString.length);
- });
-
-
-  res.render('piece', {result: queryResult, composer: composerResult, XML: xmlDoc, osmdisplay: OSMDisplay, midiData:MIDIString, previousURL: previousURL});
+  res.render('piece', {result: queryResult, composer: composerResult, XML: xmlDoc, osmdisplay: OSMDisplay, previousURL: previousURL});
 
 });
 
@@ -364,9 +318,9 @@ app.get('/works/:number/pdf', async (req, res) =>
   //first, we need to get the binary of the PDF file from the database
   var searchTerm = 'SELECT * FROM MusicPieces WHERE ID = ' + ID;
 
-  const DBtempopen = await open({filename: 'music.db', driver: sqlite3.Database});
+  const musicDB = await open({filename: 'music.db', driver: sqlite3.Database});
 
-  const result = await DBtempopen.get(searchTerm);
+  const result = await musicDB.get(searchTerm);
 
   //writing the binary data of the pdf file from the database to a variable
   queryResult = result.PDF;
@@ -391,62 +345,15 @@ app.get('/works/:number/xml', async (req, res) =>
   //first, we need to get the binary of the PDF file from the database
   var searchTerm = 'SELECT * FROM MusicPieces WHERE ID = ' + ID;
 
-  const DBtempopen = await open({filename: 'music.db', driver: sqlite3.Database});
+  const musicDB = await open({filename: 'music.db', driver: sqlite3.Database});
 
-  const result = await DBtempopen.get(searchTerm);
+  const result = await musicDB.get(searchTerm);
 
   //writing the binary data of the XML file from the database to a variable
   queryResult = result.XML;
 
   //res.send is used instead of res.render, because the data file needs to be sent and not an ejs template rendered
   res.send(queryResult);
-
-});
-
-app.get('/works/:number/midi', async (req, res) => 
-{
-  const ID = req.params.number;
-  var queryResult;
-  //first, we need to get the binary of the PDF file from the database
-  var searchTerm = 'SELECT * FROM MusicPieces WHERE ID = ' + ID;
-
-  const DBtempopen = await open({filename: 'music.db', driver: sqlite3.Database});
-
-  const result = await DBtempopen.get(searchTerm);
-
-  //writing the binary data of the XML file from the database to a variable
-  queryResult = result.XML;
-
-  let MIDIString;
-
-  //opening Verovio and converting the MusicXML to MEI and that to MIDI
-  createVerovioModule().then(VerovioModule => {
-    const verovioToolkit = new VerovioToolkit(VerovioModule);
-    //the plain string is needed, not the converted string intended for the preview with OSMD
-    const score = queryResult;
-    //console.log(score);
-    verovioToolkit.loadData(score);
-    //rendering the score to MIDI data, which is then sent to the browser
-    //https://book.verovio.org/verovio-reference-book.pdf, p. 29
-    //also https://www.npmjs.com/package/verovio
-    var MIDIData = verovioToolkit.renderToMIDI();
-    MIDIString = 'data:audio/midi;base64,' + MIDIData;
-    console.log(MIDIString.length);
-
-    res.setHeader('Content-Type', 'application/midi');
-    res.setHeader('Content-Disposition', 'inline; filename=score.midi');
-
-    res.send(MIDIData);
- });
-
- /*
-  res.setHeader('Content-Type', 'application/midi');
-  res.setHeader('Content-Disposition', 'inline; filename=score.midi');
-
-  console.log(MIDIString.length);
-
-  //res.send is used instead of res.render, because the data file needs to be sent and not an ejs template rendered
-  res.send(MIDIString);*/
 
 });
 
@@ -458,16 +365,15 @@ app.get('/composers/:number', async (req, res) =>
         var previousURL = req.session.currentURL;
         req.session.currentURL = req.url;
       }
-    
 
     const ID = req.params.number;
     var queryResult;
 
     var searchTerm = 'SELECT * FROM Composers WHERE ID = ' + ID;
     
-    const DBcomposer = await open({filename: 'composers.db', driver: sqlite3.Database});
+    const composerDB = await open({filename: 'composers.db', driver: sqlite3.Database});
 
-    queryResult = await DBcomposer.get(searchTerm);
+    queryResult = await composerDB.get(searchTerm);
 
     let mainEntity = queryResult.WikidataURL;
 
@@ -485,10 +391,12 @@ app.get('/composers/:number', async (req, res) =>
 
     //creating an array of all value descriptions and values to be passed to the ejs file
     let propertyValues = ['P569', 'P570', 'P19', 'P20', 'P22', 'P25', 'P26'];
+    //the "bindings" contain all the data of these properties
     let resultsValues = sparqlJSON.results.bindings;
     let dataValues = [];
 
     //checking in a nested for loop for a list of properties
+    //for all values corresponding to the Wikidata properties in the array, the value from the "bindings" is retrieved
     for(var i = 0; i < propertyValues.length; i++)
       {
         for(var j = 0; j < resultsValues.length; j++)
@@ -499,10 +407,30 @@ app.get('/composers/:number', async (req, res) =>
               }
           }
       }
+
+      console.log(dataValues);
+
+      //parsing the date returned by Wikidata in the ISO-8601 format to the DD/MM/YYYY format
+    
+      let dateOfBirth = dataValues[0];
+      let dateOfDeath = dataValues[2];
+
+      let isoDateOfBirth = new Date(dateOfBirth);
+      let isoDateOfDeath = new Date(dateOfDeath);
+
+      dateOfBirth = isoDateOfBirth.toLocaleDateString('en-US');
+      dateOfDeath = isoDateOfDeath.toLocaleDateString('en-US');
+
+      dataValues[0] = dateOfBirth;
+      dataValues[2] = dateOfDeath;
+
+      console.log(dataValues.length);
+
     res.render('composer', {result: queryResult, previousURL: previousURL, wikiData: dataValues});
 
   });
 
+//a simple GET request rendering the about page
 app.get('/about', async(req, res) =>{
 
   var previousURL = req.session.currentURL;
@@ -512,8 +440,7 @@ app.get('/about', async(req, res) =>{
 
 });
 
-
-//api in the format of /api/..., responses sent with json
+//the following two get requests are the api, with URLs in the format of /api/..., responses sent with json
 //https://treblle.com/blog/create-simple-rest-api-json
 
 //retrieving an individual work via the api
@@ -521,12 +448,12 @@ app.get('/api/works/:number', async (req, res) => {
   const ID = req.params.number;
   var searchTerm = 'SELECT * FROM MusicPieces WHERE ID = ' + ID;
 
-  const DBtempopen = await open({filename: 'music.db', driver: sqlite3.Database});
+  const musicDB = await open({filename: 'music.db', driver: sqlite3.Database});
   
   var queryResult;
   var composerResult;
 
-  queryResult = await DBtempopen.get(searchTerm);
+  queryResult = await musicDB.get(searchTerm);
 
   var Composer = queryResult.Composer;
   var Title = queryResult.Title;
@@ -547,9 +474,9 @@ app.get('/api/works/:number', async (req, res) => {
 
 
   //closing the database after the query has been finished
-  await DBtempopen.close();
+  await musicDB.close();
 
-  //creating a JSON file to be sent to the browser
+  //creating a JSON file to be sent to the browser and including all necessary values
   var JSONObj = {};
   JSONObj["ID"] = ID;
   JSONObj["Composer"] = Composer;
@@ -573,8 +500,6 @@ app.get('/api/results', async (req, res) => {
   var genre = req.query.genre;
   var instruments = req.query.instruments;
   var composer = req.query.composer;
-
-  console.log(key);
 
   var query;
 
@@ -681,10 +606,10 @@ app.get('/api/results', async (req, res) => {
   
   //testing a temporary database opening instead of a permanent one in dbconnect.js and export as DB
   //https://www.sqlitetutorial.net/sqlite-nodejs/
-  const DBtempopen = await open({filename: 'music.db', driver: sqlite3.Database});
+  const musicDB = await open({filename: 'music.db', driver: sqlite3.Database});
 
   //this array stores all the results 
-  var rows = await DBtempopen.all(query);
+  var rows = await musicDB.all(query);
 
   var results = [];
 
@@ -709,22 +634,8 @@ app.get('/api/results', async (req, res) => {
       results.push(rowDictionary);
   });
 
-  await DBtempopen.close();
+  await musicDB.close();
 
   res.json(JSON.parse(JSON.stringify(results)));
 
 });
-
-/*app.get('api/composer/:number', async (req, res) => 
-{
-    const ID = req.params.number;
-    var queryResult;
-
-    var searchTerm = 'SELECT * FROM Composers WHERE ID = ' + ID;
-    
-    const DBcomposer = await open({filename: 'composers.db', driver: sqlite3.Database});
-
-    queryResult = await DBcomposer.get(searchTerm);
-
-    var resultsDictionary = {};
-});*/
