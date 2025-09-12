@@ -6,12 +6,12 @@ body {
     margin: 50px;
 }
 
-a {
-    text-decoration: none;
-}
-
 p {
   font-size: medium;
+}
+
+a {
+  text-decoration-line: none;
 }
 
 /*the div separating the individual elements*/
@@ -25,6 +25,7 @@ p {
 
 .navbarMainLink {
   color: #507ed3;
+  text-decoration: none;
 }
 
 .navbarMainLink:hover {
@@ -37,6 +38,7 @@ p {
 	padding: 0 .25rem;
 	margin: 0 -.25rem;
   transition: color .3s ease-in-out, box-shadow .3s ease-in-out;
+  text-decoration: none;
 } 
 
 .navbarAboutlink:hover {

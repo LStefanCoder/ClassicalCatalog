@@ -303,9 +303,25 @@ app.get('/works/:number', async (req, res) =>
 
   composerResult = await composerDB.get(composerSearchTerm);
 
+  let furtherWorksURL = '/results?searchbar=&composer=';
+
+  let composerName = queryResult.Composer;
+  //splitting the name of the composer into individual parts and stringing them together with + signs for the URL
+  let composerNameArray = composerName.split(" ");
+
+  for(var i = 0; i < composerNameArray.length; i++)
+  {
+    furtherWorksURL= furtherWorksURL + composerNameArray[i] + '+';
+  }
+
+  //removing the last + sign
+  furtherWorksURL = furtherWorksURL.slice(0, -1); 
+
+  furtherWorksURL = furtherWorksURL + '&genre=allGenres&key=allKeys&instruments=allInstruments';
+
   await composerDB.close();
 
-  res.render('piece', {result: queryResult, composer: composerResult, XML: xmlDoc, osmdisplay: OSMDisplay, previousURL: previousURL});
+  res.render('piece', {result: queryResult, composer: composerResult, XML: xmlDoc, osmdisplay: OSMDisplay, previousURL: previousURL, furtherWorksURL: furtherWorksURL});
 
 });
 
@@ -410,8 +426,6 @@ app.get('/composers/:number', async (req, res) =>
           }
       }
 
-      console.log(dataValues);
-
       //parsing the date returned by Wikidata in the ISO-8601 format to the DD/MM/YYYY format
     
       let dateOfBirth = dataValues[0];
@@ -425,8 +439,6 @@ app.get('/composers/:number', async (req, res) =>
 
       dataValues[0] = dateOfBirth;
       dataValues[2] = dateOfDeath;
-
-      console.log(dataValues.length);
 
     res.render('composer', {result: queryResult, previousURL: previousURL, wikiData: dataValues});
 

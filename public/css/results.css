@@ -4,7 +4,7 @@ body {
 
 /*this rule removes the underline from the links*/
 a {
-  text-decoration: none;
+  text-decoration-line: none;
 }
 
 p {
@@ -26,6 +26,7 @@ div {
 
 .navbarMainLink {
   color: #507ed3;
+  text-decoration: none;
 }
 
 .navbarMainLink:hover {
@@ -38,6 +39,7 @@ div {
 	padding: 0 .25rem;
 	margin: 0 -.25rem;
   transition: color .3s ease-in-out, box-shadow .3s ease-in-out;
+  text-decoration: none;
 } 
 
 .navbarAboutlink:hover {
