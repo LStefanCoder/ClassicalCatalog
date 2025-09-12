@@ -21,6 +21,10 @@ p {
 .navbarMainLink {
   color: #507ed3;
 }
+
+.navbarMainLink:hover {
+  color: #fffdf6;
+}
   
 .navbarAboutlink {
     box-shadow: inset 0 0 0 0 #0049e6;

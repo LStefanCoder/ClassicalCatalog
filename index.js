@@ -136,7 +136,7 @@ app.get('/results', async (req, res) => {
 
               else
                 {
-                  query = " SELECT * FROM MusicPieces WHERE Title LIKE '%" + searchTerm + "%' OR Composer LIKE '%" + searchTerm + "%' AND Composer = '" + composer + "'";
+                  query = " SELECT * FROM MusicPieces WHERE (Title LIKE '%" + searchTerm + "%' OR Composer LIKE '%" + searchTerm + "%') AND Composer = '" + composer + "'";
                 }
               
             }
