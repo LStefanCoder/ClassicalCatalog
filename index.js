@@ -1,3 +1,5 @@
+//Classical Catalog
+
 //in the package.json, a "type": "module" command is necessary to treat all js files as modules
 import express from 'express';
 import bodyParser from 'body-parser';
@@ -162,7 +164,7 @@ app.get('/results', async (req, res) => {
                 }
               else
               {
-                  query = " SELECT * FROM MusicPieces WHERE (Title LIKE '%" + searchTerm + "%' OR Composer LIKE '%" + searchTerm + "%') AND Composer = '" + composer + "'AND Genre = '" + genre + "'";
+                  query = " SELECT * FROM MusicPieces WHERE (Title LIKE '%" + searchTerm + "%' OR Composer LIKE '%" + searchTerm + "%') AND Composer = '" + composer + "' AND Genre = '" + genre + "'";
               }
               
             }
@@ -170,7 +172,7 @@ app.get('/results', async (req, res) => {
             {
               if(req.query.composer == "allComposers")
                 {
-                  query = " SELECT * FROM MusicPieces WHERE (Title LIKE '%" + searchTerm + "%' OR Composer LIKE '%" + searchTerm + "%') AND Composer = '" + composer + "AND Genre = '" + genre + "' AND Instruments = '" + instruments + "'";
+                  query = " SELECT * FROM MusicPieces WHERE (Title LIKE '%" + searchTerm + "%' OR Composer LIKE '%" + searchTerm + "%') AND Composer = '" + composer + "' AND Genre = '" + genre + "' AND Instruments = '" + instruments + "'";
                 }
               else
               {
