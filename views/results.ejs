@@ -49,11 +49,11 @@
                   <p><%= result[i*2]['Year'] %></p>
                   <!--https://stackoverflow.com/questions/42609853/i-want-to-make-href-tag-dynamic-and-value-will-be-populated-and-i-have-ejs-templ-->
                   <!--icon from https://feathericons.com/, MIT license-->
-                  <a href="/works/<%= result[i]['ID'] %>" class="btn card-link">Score</a>
+                  <a href="/works/<%= result[i*2]['ID'] %>" class="btn card-link">Score</a>
                 </div>
                 <div class="col-md">
                   <!--embedding the image from the images folder, using the ID of the piece-->
-                  <img class="col-8 cardImage img-thumbnail float-end mw-50" src="/img/<%= result[i]['ID'] %>.jpeg" alt="">
+                  <img class="col-8 cardImage img-thumbnail float-end mw-50" src="/img/<%= result[i*2]['ID'] %>.jpeg" alt="">
                 </div>
               </div>
             </div>
@@ -72,10 +72,10 @@
                   <p><%= result[i*2 + 1]['Year'] %></p>
                   <!--https://stackoverflow.com/questions/42609853/i-want-to-make-href-tag-dynamic-and-value-will-be-populated-and-i-have-ejs-templ-->
                   <!--icon from https://feathericons.com/, MIT license-->
-                  <a href="/works/<%= result[i]['ID'] %>" class="btn card-link">Score</a>
+                  <a href="/works/<%= result[i*2 + 1]['ID'] %>" class="btn card-link">Score</a>
                 </div>
                 <div class="col-md">
-                  <img class="col-8 cardImage img-thumbnail float-end mw-50" src="/img/<%= result[i]['ID'] %>.jpeg" alt="">
+                  <img class="col-8 cardImage img-thumbnail float-end mw-50" src="/img/<%= result[i*2 + 1]['ID'] %>.jpeg" alt="">
                 </div>
               </div>
             </div>

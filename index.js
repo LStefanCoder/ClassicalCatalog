@@ -112,7 +112,7 @@ app.get('/results', async (req, res) => {
       req.session.currentURL = req.url;
     }
 
-  var searchTerm = req.query.searchbar;
+  var searchTerm = req.query.term;
 
   //selecting the correct key and genre for the search
   var key = req.query.key;
@@ -303,7 +303,7 @@ app.get('/works/:number', async (req, res) =>
 
   composerResult = await composerDB.get(composerSearchTerm);
 
-  let furtherWorksURL = '/results?searchbar=&composer=';
+  let furtherWorksURL = '/results?term=&composer=';
 
   let composerName = queryResult.Composer;
   //splitting the name of the composer into individual parts and stringing them together with + signs for the URL
@@ -328,9 +328,7 @@ app.get('/works/:number', async (req, res) =>
 //the get function for the pdf files of the individual works
 app.get('/works/:number/pdf', async (req, res) => 
   {
-
-//https://stackoverflow.com/questions/38855299/creating-an-html-or-pdf-file-in-memory-and-streaming-it-in-node-js
-
+  //inspired by https://stackoverflow.com/questions/38855299/creating-an-html-or-pdf-file-in-memory-and-streaming-it-in-node-js
   const ID = req.params.number;
   var queryResult;
   //first, we need to get the binary of the PDF file from the database
