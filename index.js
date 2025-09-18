@@ -4,6 +4,11 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 
+//import MXML from 'jazz-mxml';
+
+import createVerovioModule from 'verovio/wasm';
+import { VerovioToolkit } from 'verovio/esm';
+
 
 import sqlite3 from 'sqlite3';
 const sql3 = sqlite3.verbose();
@@ -341,9 +346,9 @@ app.get('/works/:number/pdf', async (req, res) =>
   //writing the binary data of the pdf file from the database to a variable
   queryResult = result.PDF;
 
-  //https://www.geeksforgeeks.org/node-js-response-setheader-method/
+  //issue see https://www.geeksforgeeks.org/node-js-response-setheader-method/
   //setting the response header to a pdf filetype
-  //https://github.com/marcbachmann/node-html-pdf/issues/472
+  //issue see https://github.com/marcbachmann/node-html-pdf/issues/472
   res.setHeader('Content-Type', 'application/pdf');
   res.setHeader('Content-Disposition', 'inline; filename=score.pdf');
 
@@ -370,6 +375,54 @@ app.get('/works/:number/xml', async (req, res) =>
 
   //res.send is used instead of res.render, because the data file needs to be sent and not an ejs template rendered
   res.send(queryResult);
+
+});
+
+
+app.get('/works/:number/midi', async (req, res) => {
+
+  const ID = req.params.number;
+  var queryResult;
+  //first, we need to get the binary of the PDF file from the database
+  var searchTerm = 'SELECT * FROM MusicPieces WHERE ID = ' + ID;
+
+  const musicDB = await open({filename: 'music.db', driver: sqlite3.Database});
+
+  const result = await musicDB.get(searchTerm);
+
+  //writing the binary data of the XML file from the database to a variable
+  queryResult = result.XML;
+
+  //opening Verovio and converting the MusicXML to MEI and that to MIDI
+  createVerovioModule().then(VerovioModule => {
+    const verovioToolkit = new VerovioToolkit(VerovioModule);
+    //the plain string is needed, not the converted string intended for the preview with OSMD
+    const score = queryResult;
+    verovioToolkit.loadData(score);
+    //rendering the score to MIDI data, which is then sent to the browser
+    //https://book.verovio.org/verovio-reference-book.pdf, p. 29
+    //also https://www.npmjs.com/package/verovio
+    var MIDIData = verovioToolkit.renderToMIDI();
+
+    //converting the base64 string MIDIData into a binary string, which can then be saved as a file
+    //the following six lines of code taken from https://saturncloud.io/blog/creating-a-blob-from-a-base64-string-in-javascript/
+    const byteCharacters = atob(MIDIData);
+    const byteArrays = [];
+
+    for (let i = 0; i < byteCharacters.length; i++) {
+        byteArrays.push(byteCharacters.charCodeAt(i));
+    }
+
+    const byteArray = new Uint8Array(byteArrays);
+
+    //see https://book.verovio.org/interactive-notation/encoding-formats.html
+    let MIDIBlob = new Blob([byteArray], {type: "audio/midi"});
+    res.type(MIDIBlob.type);
+    //sending the blob file to the client, based on https://stackoverflow.com/questions/52665103/using-express-how-to-send-blob-object-as-response
+    MIDIBlob.arrayBuffer().then((buf) => {
+      res.send(Buffer.from(buf, 'base64'));
+    });
+ });
 
 });
 
@@ -425,7 +478,6 @@ app.get('/composers/:number', async (req, res) =>
       }
 
       //parsing the date returned by Wikidata in the ISO-8601 format to the DD/MM/YYYY format
-    
       let dateOfBirth = dataValues[0];
       let dateOfDeath = dataValues[2];
 
@@ -480,7 +532,6 @@ app.get('/api/works/:number', async (req, res) => {
   var XML = queryResult.XML;
 
   //using the xmlbuilder2 module to build an XML file from the string, //https://github.com/oozcitak/xmlbuilder2
-
   const xmlStr = queryResult.XML;
   const xmlDoc = xmlbuilder2.create(xmlStr);
 
