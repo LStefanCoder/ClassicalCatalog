@@ -4,8 +4,6 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 
-//import MXML from 'jazz-mxml';
-
 import createVerovioModule from 'verovio/wasm';
 import { VerovioToolkit } from 'verovio/esm';
 

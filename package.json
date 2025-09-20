@@ -23,7 +23,6 @@
     "ejs": "^3.1.10",
     "express": "^5.1.0",
     "express-session": "^1.18.1",
-    "jazz-mxml": "^0.0.7",
     "opensheetmusicdisplay": "^1.9.0",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7",
